@@ -1,0 +1,662 @@
+{% extends "base.html" %}
+
+{% block title %}购物车 - HackShop{% endblock %}
+
+{% block head %}
+<style>
+    /* 购物车页面样式 */
+    .cart-page {
+        padding: 2rem 0;
+    }
+
+    .cart-header {
+        background-color: var(--white-color);
+        padding: 1.5rem;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow-sm);
+        margin-bottom: 1.5rem;
+    }
+
+    .cart-content {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+    }
+
+    /* 购物车表格 */
+    .cart-table {
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow-sm);
+        overflow: hidden;
+    }
+
+    .cart-table-header {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+        display: grid;
+        grid-template-columns: 50px 80px 1fr 120px 120px 120px 60px;
+        gap: 1rem;
+        align-items: center;
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+
+    .cart-item {
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+        display: grid;
+        grid-template-columns: 50px 80px 1fr 120px 120px 120px 60px;
+        gap: 1rem;
+        align-items: center;
+        transition: background-color 0.3s ease;
+    }
+
+    .cart-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
+    .cart-item-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .cart-item-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: var(--border-radius-md);
+    }
+
+    .cart-item-info h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .cart-item-info p {
+        margin: 0;
+        color: var(--gray-color);
+        font-size: 0.9rem;
+    }
+
+    .cart-item-price {
+        font-weight: 600;
+        color: var(--secondary-color);
+    }
+
+    /* 数量选择器 */
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius-sm);
+        overflow: hidden;
+    }
+
+    .quantity-btn {
+        background-color: #f8f9fa;
+        border: none;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s ease;
+    }
+
+    .quantity-btn:hover {
+        background-color: #e9ecef;
+    }
+
+    .quantity-input {
+        width: 40px;
+        height: 30px;
+        border: none;
+        text-align: center;
+        outline: none;
+        font-size: 0.9rem;
+    }
+
+    .cart-item-subtotal {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .cart-item-remove {
+        background: none;
+        border: none;
+        color: var(--gray-color);
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: color 0.3s ease;
+    }
+
+    .cart-item-remove:hover {
+        color: var(--secondary-color);
+    }
+
+    /* 购物车侧边栏 */
+    .cart-sidebar {
+        position: sticky;
+        top: 6rem;
+        height: fit-content;
+    }
+
+    .cart-summary {
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow-sm);
+        padding: 1.5rem;
+    }
+
+    .cart-summary h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .summary-row.total {
+        border-top: 2px solid #eee;
+        padding-top: 0.75rem;
+        margin-top: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .checkout-btn {
+        width: 100%;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.75rem;
+        border-radius: var(--border-radius-md);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .checkout-btn:hover {
+        background-color: #34495e;
+    }
+
+    .continue-shopping {
+        width: 100%;
+        background-color: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        padding: 0.75rem;
+        border-radius: var(--border-radius-md);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+        display: block;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .continue-shopping:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    /* 批量操作栏 */
+    .cart-batch-actions {
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow-sm);
+        padding: 1rem;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .batch-select-all {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .batch-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .batch-btn {
+        background-color: transparent;
+        color: var(--gray-color);
+        border: 1px solid #ddd;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .batch-btn:hover {
+        background-color: #f8f9fa;
+        color: var(--dark-color);
+    }
+
+    .batch-btn.delete {
+        color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+
+    .batch-btn.delete:hover {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+
+    /* 空购物车 */
+    .empty-cart {
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow-sm);
+        display: none; /* 默认隐藏，由JS控制显示 */
+    }
+
+    .empty-cart i {
+        font-size: 4rem;
+        color: var(--gray-color);
+        margin-bottom: 1rem;
+    }
+
+    .empty-cart h3 {
+        margin-bottom: 1rem;
+        color: var(--dark-color);
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 992px) {
+        .cart-content {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-sidebar {
+            position: relative;
+            top: 0;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .cart-table-header,
+        .cart-item {
+            grid-template-columns: 40px 60px 1fr 80px;
+            gap: 0.5rem;
+        }
+
+        .cart-item-price,
+        .cart-item-subtotal {
+            display: none;
+        }
+
+        .cart-batch-actions {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+    <div class="cart-header">
+        <h2 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>我的购物车</h2>
+    </div>
+
+    <div id="cartContent" class="cart-content">
+        <!-- 购物车左侧内容 -->
+        <div class="cart-left">
+            <div class="cart-table">
+                <div class="cart-table-header">
+                    <div class="text-center"><input type="checkbox" id="selectAllTop" onchange="toggleSelectAll(this)"></div>
+                    <div>商品</div>
+                    <div></div>
+                    <div class="text-center">单价</div>
+                    <div class="text-center">数量</div>
+                    <div class="text-center">小计</div>
+                    <div class="text-center">操作</div>
+                </div>
+
+                <div id="cartItemsContainer">
+                    <!-- JS将在这里渲染商品 -->
+                </div>
+            </div>
+
+            <div class="cart-batch-actions">
+                <div class="batch-select-all">
+                    <input type="checkbox" id="selectAllBottom" onchange="toggleSelectAll(this)">
+                    <label for="selectAllBottom">全选</label>
+                </div>
+                <div class="batch-actions">
+                    <button class="batch-btn delete" onclick="batchRemove()">
+                        <i class="fas fa-trash-alt me-1"></i>删除选中
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 购物车侧边栏 -->
+        <div class="cart-sidebar">
+            <div class="cart-summary">
+                <h3>订单摘要</h3>
+                <div class="summary-row">
+                    <span>商品数量</span>
+                    <span id="summaryCount">0</span>
+                </div>
+                <div class="summary-row">
+                    <span>商品总额</span>
+                    <span id="summaryTotal">¥0.00</span>
+                </div>
+                <div class="summary-row">
+                    <span>优惠减免</span>
+                    <span>-¥0.00</span>
+                </div>
+                <div class="summary-row total">
+                    <span>应付总额</span>
+                    <span id="summaryFinal">¥0.00</span>
+                </div>
+                <button class="checkout-btn" onclick="proceedToCheckout()">
+                    去结算 <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+                <a href="{{ url_for('main.index') }}" class="continue-shopping">
+                    继续购物
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="emptyCart" class="empty-cart">
+        <i class="fas fa-shopping-cart"></i>
+        <h3>购物车还是空的</h3>
+        <p>看起来您还没有添加任何商品到购物车。</p>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary mt-3">
+            去逛逛 <i class="fas fa-arrow-right ms-2"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Load data from backend
+    let cartItems = {{ cart_items_json | tojson }};
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        renderCart();
+    });
+
+    // 渲染购物车
+    function renderCart() {
+        const container = document.getElementById('cartItemsContainer');
+        const content = document.getElementById('cartContent');
+        const empty = document.getElementById('emptyCart');
+
+        if (cartItems.length === 0) {
+            content.style.display = 'none';
+            empty.style.display = 'block';
+            return;
+        }
+
+        content.style.display = 'grid';
+        empty.style.display = 'none';
+        container.innerHTML = '';
+
+        cartItems.forEach(item => {
+            const subtotal = item.quantity * item.goods.price;
+            const html = `
+                <div class="cart-item" data-id="${item.id}">
+                    <div class="text-center">
+                        <input type="checkbox" class="cart-item-checkbox" 
+                            ${item.selected ? 'checked' : ''} 
+                            onchange="toggleItem('${item.id}', this.checked)">
+                    </div>
+                    <img src="${item.goods.mainimg}" alt="${item.goods.goodsname}" class="cart-item-image">
+                    <div class="cart-item-info">
+                        <h4>${item.goods.goodsname}</h4>
+                        <p>${item.goods.model || ''}</p>
+                    </div>
+                    <div class="cart-item-price text-center">¥${item.goods.price.toFixed(2)}</div>
+                    <div class="quantity-selector mx-auto">
+                        <button class="quantity-btn minus" onclick="updateQuantity('${item.id}', -1)">-</button>
+                        <input type="text" class="quantity-input" value="${item.quantity}" readonly>
+                        <button class="quantity-btn plus" onclick="updateQuantity('${item.id}', 1)">+</button>
+                    </div>
+                    <div class="cart-item-subtotal text-center">¥${subtotal.toFixed(2)}</div>
+                    <div class="text-center">
+                        <button class="cart-item-remove" onclick="removeItem('${item.id}')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+
+        // 更新全选状态
+        const allSelected = cartItems.length > 0 && cartItems.every(item => item.selected);
+        document.getElementById('selectAllTop').checked = allSelected;
+        document.getElementById('selectAllBottom').checked = allSelected;
+
+        updateSummary();
+    }
+
+    // 更新数量
+    function updateQuantity(itemId, change) {
+        // Use loose equality (==) because itemId is string from HTML attribute but item.id is number
+        const item = cartItems.find(i => i.id == itemId);
+        if (!item) return;
+
+        // Prevent decreasing below 1
+        if (change < 0 && item.quantity <= 1) return;
+
+        const url = change > 0 ? "{{ url_for('order.add_to_cart') }}" : "{{ url_for('order.decrease_cart_item') }}";
+        const data = {
+            goods_id: item.goods.id,
+            quantity: Math.abs(change)
+        };
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.quantity) {
+                    item.quantity = data.quantity;
+                } else {
+                    item.quantity = item.quantity + change;
+                }
+                renderCart();
+            } else {
+                alert(data.message || '操作失败');
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('操作失败，请重试');
+        });
+    }
+
+    // 切换选中状态
+    function toggleItem(itemId, checked) {
+        const item = cartItems.find(i => i.id == itemId);
+        if (item) {
+            item.selected = checked;
+            renderCart();
+        }
+    }
+
+    // 删除商品
+    function removeItem(itemId) {
+        if (!confirm('确定要删除这个商品吗？')) return;
+        
+        fetch("{{ url_for('order.remove_cart_item') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ item_id: itemId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                cartItems = cartItems.filter(i => i.id != itemId);
+                renderCart();
+                // Update badge count
+                const badge = document.querySelector('.cart-badge');
+                if (badge && data.cart_count !== undefined) {
+                    badge.textContent = data.cart_count;
+                }
+            } else {
+                alert(data.message || '删除失败');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('操作失败，请重试');
+        });
+    }
+
+    // 全选/取消全选
+    function toggleSelectAll(checkbox) {
+        const isChecked = checkbox.checked;
+        cartItems.forEach(item => item.selected = isChecked);
+        renderCart();
+    }
+
+    // 批量删除
+    function batchRemove() {
+        const selectedItems = cartItems.filter(i => i.selected);
+        const selectedCount = selectedItems.length;
+        if (selectedCount === 0) {
+            alert('请选择要删除的商品');
+            return;
+        }
+
+        if (!confirm(`确定要删除选中的 ${selectedCount} 个商品吗？`)) return;
+        
+        const itemIds = selectedItems.map(i => i.id);
+
+        fetch("{{ url_for('order.batch_remove_cart_items') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ item_ids: itemIds })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                cartItems = cartItems.filter(i => !i.selected);
+                renderCart();
+                // Update badge count
+                const badge = document.querySelector('.cart-badge');
+                if (badge && data.cart_count !== undefined) {
+                    badge.textContent = data.cart_count;
+                }
+            } else {
+                alert(data.message || '删除失败');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('操作失败，请重试');
+        });
+    }
+
+    // 更新摘要
+    function updateSummary() {
+        let count = 0;
+        let total = 0;
+
+        cartItems.forEach(item => {
+            if (item.selected) {
+                count += item.quantity;
+                total += item.quantity * item.goods.price;
+            }
+        });
+
+        document.getElementById('summaryCount').textContent = count;
+        document.getElementById('summaryTotal').textContent = '¥' + total.toFixed(2);
+        document.getElementById('summaryFinal').textContent = '¥' + total.toFixed(2);
+    }
+
+    // 结算
+    function proceedToCheckout() {
+        const selectedItems = cartItems.filter(i => i.selected);
+        
+        if (selectedItems.length === 0) {
+            alert('请至少选择一个商品');
+            return;
+        }
+
+        const btn = document.querySelector('.checkout-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>正在创建订单...';
+        btn.disabled = true;
+
+        const itemIds = selectedItems.map(i => i.id);
+
+        fetch("{{ url_for('order.checkout_cart') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ item_ids: itemIds })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to checkout page with order ID
+                window.location.href = "/order/check/" + data.order_id;
+            } else {
+                alert(data.message || '结算失败');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('系统错误，请重试');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+</script>
+{% endblock %}

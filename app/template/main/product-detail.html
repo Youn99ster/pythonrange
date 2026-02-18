@@ -1,0 +1,563 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.goodsname }} - HackShop{% endblock %}
+
+{% block head %}
+<style>
+    /* 主内容区域 */
+    .main-content {
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+
+    /* 商品详情容器 */
+    .product-detail-container {
+        background: white;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--box-shadow-sm);
+        padding: var(--spacing-xl);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    /* 商品图片区域 */
+    .product-image-section {
+        text-align: center;
+    }
+
+    .main-product-image {
+        width: 100%;
+        max-width: 400px;
+        height: 400px;
+        object-fit: contain;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--box-shadow-md);
+        transition: transform 0.3s ease;
+    }
+
+    .main-product-image:hover {
+        transform: scale(1.05);
+    }
+
+    .thumbnail-images {
+        display: flex;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .thumbnail {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .thumbnail:hover,
+    .thumbnail.active {
+        border-color: var(--primary-color);
+        transform: scale(1.1);
+    }
+
+    /* 商品信息区域 */
+    .product-info h1 {
+        color: var(--primary-color);
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .product-rating {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .stars {
+        color: var(--warning-color);
+    }
+
+    .product-price {
+        font-size: 2rem;
+        color: var(--secondary-color);
+        font-weight: bold;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .original-price {
+        text-decoration: line-through;
+        color: var(--gray-color);
+        font-size: 1.2rem;
+        margin-left: var(--spacing-md);
+    }
+
+    .product-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .product-tag {
+        background: var(--light-color);
+        color: var(--dark-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.9rem;
+    }
+
+    .product-description {
+        color: var(--dark-color);
+        margin-bottom: var(--spacing-xl);
+        line-height: 1.8;
+        white-space: pre-wrap;
+    }
+
+    /* 数量选择 */
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--light-color);
+        border-radius: var(--border-radius-md);
+        background: white;
+    }
+
+    .quantity-btn {
+        background: none;
+        border: none;
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: background-color 0.3s ease;
+        color: var(--primary-color);
+    }
+
+    .quantity-btn:hover {
+        background: var(--light-color);
+    }
+
+    .quantity-input {
+        width: 80px;
+        text-align: center;
+        border: none;
+        border-left: 1px solid var(--light-color);
+        border-right: 1px solid var(--light-color);
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .quantity-input:focus {
+        outline: none;
+    }
+
+    /* 购买按钮 */
+    .purchase-buttons {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .btn-add-cart,
+    .btn-buy-now {
+        flex: 1;
+        padding: 1rem;
+        border: none;
+        border-radius: var(--border-radius-md);
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+    }
+
+    .btn-add-cart {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-add-cart:hover {
+        background: #34495e;
+        transform: translateY(-2px);
+        box-shadow: var(--box-shadow-md);
+    }
+
+    .btn-buy-now {
+        background: var(--secondary-color);
+        color: white;
+    }
+
+    .btn-buy-now:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+        box-shadow: var(--box-shadow-md);
+    }
+
+    /* 商品保障 */
+    .product-guarantees {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: var(--border-radius-md);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .guarantee-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .guarantee-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .guarantee-icon {
+        color: var(--success-color);
+        font-size: 1.2rem;
+        margin-right: var(--spacing-sm);
+    }
+
+    /* 商品规格 */
+    .product-specs {
+        background: white;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--box-shadow-sm);
+        padding: var(--spacing-xl);
+        margin: var(--spacing-xl) 0;
+    }
+
+    .specs-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .specs-table th,
+    .specs-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--light-color);
+    }
+
+    .specs-table th {
+        background: #f8f9fa;
+        font-weight: bold;
+        color: var(--primary-color);
+        width: 30%;
+    }
+
+    /* 面包屑导航 */
+    .breadcrumb {
+        background: none;
+        padding: 1rem 0;
+        margin: 0;
+    }
+
+    .breadcrumb-item a {
+        color: var(--gray-color);
+        text-decoration: none;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--primary-color);
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .product-detail-container {
+            padding: var(--spacing-md);
+        }
+
+        .product-info h1 {
+            font-size: 1.5rem;
+        }
+
+        .product-price {
+            font-size: 1.5rem;
+        }
+
+        .purchase-buttons {
+            flex-direction: column;
+        }
+
+        .thumbnail-images {
+            overflow-x: auto;
+            justify-content: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <div class="container">
+        <!-- 面包屑导航 -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">首页</a></li>
+                <li class="breadcrumb-item"><a href="#">{{ product.category }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ product.goodsname }}</li>
+            </ol>
+        </nav>
+
+        <!-- 商品详情 -->
+        <div class="product-detail-container">
+            <div class="row">
+                <!-- 商品图片 -->
+                <div class="col-lg-6 product-image-section">
+                    <img src="{{ product.mainimg }}"
+                         alt="{{ product.goodsname }}" class="main-product-image" id="mainImage">
+                    <div class="thumbnail-images">
+                        <img src="{{ product.mainimg }}"
+                             alt="{{ product.goodsname }}" class="thumbnail active" onclick="changeImage(this)">
+                        {% for img in product.images %}
+                            {% if not img.is_main %}
+                            <img src="{{ img.url }}"
+                                 alt="{{ product.goodsname }}" class="thumbnail" onclick="changeImage(this)">
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 商品信息 -->
+                <div class="col-lg-6 product-info">
+                    <h1>{{ product.goodsname }}</h1>
+
+                    <div class="product-rating">
+                        <div class="stars">
+                            {% for i in range(5) %}
+                                {% if product.rating_avg >= i + 1 %}
+                                <i class="fas fa-star"></i>
+                                {% elif product.rating_avg >= i + 0.5 %}
+                                <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span>{{ product.rating_avg }}分 ({{ product.rating_count }}条评价)</span>
+                        <span>| 已售{{ product.sales_count }}件</span>
+                    </div>
+
+                    <div class="product-price">
+                        ¥{{ "{:,.2f}".format(product.price) }}
+                        {% if product.original_price %}
+                        <span class="original-price">¥{{ "{:,.2f}".format(product.original_price) }}</span>
+                        {% endif %}
+                        <span class="badge bg-danger">限时特价</span>
+                    </div>
+
+                    <div class="product-tags">
+                        <span class="product-tag">正品保证</span>
+                        <span class="product-tag">极速发货</span>
+                        <span class="product-tag">售后无忧</span>
+                    </div>
+
+                    <div class="product-description">
+                        <h4>商品描述</h4>
+                        <p>{{ product.content }}</p>
+                    </div>
+
+                    <div class="quantity-selector">
+                        <label class="option-label">数量</label>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                            <input type="number" class="quantity-input" value="1" min="1" max="10" id="quantity">
+                            <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                        </div>
+                        <span>库存: {{ product.stock }}</span>
+                    </div>
+
+                    <div class="purchase-buttons">
+                        <button class="btn-add-cart" onclick="addToCart()">
+                            <i class="fas fa-shopping-cart"></i> 加入购物车
+                        </button>
+                        <button class="btn-buy-now" onclick="buyNow()">
+                            <i class="fas fa-bolt"></i> 立即购买
+                        </button>
+                    </div>
+
+                    <div class="product-guarantees">
+                        <div class="guarantee-item">
+                            <i class="fas fa-check-circle guarantee-icon"></i>
+                            <span>正品保证，假一赔十</span>
+                        </div>
+                        <div class="guarantee-item">
+                            <i class="fas fa-truck guarantee-icon"></i>
+                            <span>顺丰包邮，次日达</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品规格 -->
+        <div class="product-specs">
+            <h3>商品规格</h3>
+            <table class="specs-table">
+                {% if product.brand %}
+                <tr>
+                    <th>品牌</th>
+                    <td>{{ product.brand }}</td>
+                </tr>
+                {% endif %}
+                {% if product.model %}
+                <tr>
+                    <th>型号</th>
+                    <td>{{ product.model }}</td>
+                </tr>
+                {% endif %}
+                {% for spec in product.specs %}
+                <tr>
+                    <th>{{ spec.name }}</th>
+                    <td>{{ spec.value }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 显示通知
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+        notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.body.appendChild(notification);
+        setTimeout(() => { if (notification.parentNode) { notification.remove(); } }, 3000);
+    }
+
+    // 图片切换功能
+    function changeImage(thumbnail) {
+        const mainImage = document.getElementById('mainImage');
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        mainImage.src = thumbnail.src;
+        thumbnails.forEach(thumb => thumb.classList.remove('active'));
+        thumbnail.classList.add('active');
+    }
+
+    // 数量控制
+    function changeQuantity(change) {
+        const quantityInput = document.getElementById('quantity');
+        let currentValue = parseInt(quantityInput.value);
+        let newValue = currentValue + change;
+        const maxStock = {{ product.stock }};
+
+        if (newValue >= 1 && newValue <= maxStock) {
+            quantityInput.value = newValue;
+        }
+    }
+
+    // 加入购物车
+    function addToCart() {
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const productId = Number("{{ product.id }}");
+        
+        fetch("{{ url_for('order.add_to_cart') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                goods_id: productId,
+                quantity: quantity
+            })
+        })
+        .then(response => {
+            if (response.status === 401) {
+                // Not logged in
+                return response.json().then(data => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                    throw new Error(data.message);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('已添加到购物车', 'success');
+                // Update cart badge if possible
+                const cartBadge = document.querySelector('.cart-badge');
+                if (cartBadge && data.cart_count !== undefined) {
+                    cartBadge.textContent = data.cart_count;
+                }
+            } else {
+                showNotification(data.message || '添加失败', 'danger');
+            }
+        })
+        .catch(error => {
+            if (error.message) {
+                showNotification(error.message, 'danger');
+            } else {
+                console.error('Error:', error);
+                showNotification('添加失败，请稍后重试', 'danger');
+            }
+        });
+    }
+
+    // 立即购买
+    function buyNow() {
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const productId = Number("{{ product.id }}");
+
+        fetch("{{ url_for('order.add_to_cart') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                goods_id: productId,
+                quantity: quantity
+            })
+        })
+        .then(response => {
+             if (response.status === 401) {
+                // Not logged in
+                return response.json().then(data => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                    throw new Error(data.message);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Redirect to cart
+                window.location.href = "{{ url_for('order.cart') }}";
+            } else {
+                showNotification(data.message || '购买失败', 'danger');
+            }
+        })
+        .catch(error => {
+            if (error.message) {
+                showNotification(error.message, 'danger');
+            } else {
+                console.error('Error:', error);
+                showNotification('购买失败，请稍后重试', 'danger');
+            }
+        });
+    }
+</script>
+{% endblock %}

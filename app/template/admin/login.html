@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理系统 - 登录</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            border: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-radius: 12px;
+            background: #fff;
+            overflow: hidden;
+        }
+        .login-header {
+            text-align: center;
+            padding: 2.5rem 1.5rem 1.5rem;
+            background: #fff;
+        }
+        .login-header h2 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .login-body {
+            padding: 1rem 2rem 3rem;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            font-weight: 600;
+            border-radius: 6px;
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #1a252f;
+            border-color: #1a252f;
+            transform: translateY(-1px);
+        }
+        .form-control {
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        .form-control:focus {
+            border-color: #2c3e50;
+            box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.15);
+        }
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+        .copyright {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #95a5a6;
+            padding-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="card login-card">
+        <div class="login-header">
+            <h2><i class="fas fa-user-shield"></i> 管理后台</h2>
+            <p class="text-muted mb-0">HackShop Administration Portal</p>
+        </div>
+        
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="px-4">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="login-body">
+            <form id="adminLoginForm" method="POST" action="{{ url_for('admin.login') }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label text-muted small fw-bold">用户名</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user text-muted"></i></span>
+                        <input type="text" class="form-control" id="username" name="username" required placeholder="请输入管理员账号" autofocus>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="form-label text-muted small fw-bold">密码</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" required placeholder="请输入密码">
+                    </div>
+                </div>
+                <div class="mb-4 form-check">
+                    <input type="checkbox" class="form-check-input" id="remember">
+                    <label class="form-check-label text-muted small" for="remember">记住登录状态</label>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt me-2"></i>登录系统
+                </button>
+            </form>
+        </div>
+        <div class="copyright">
+            &copy; 2025 HackShop Security Lab
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <!-- CryptoJS for AES (Vulnerability: V-Admin-AES) -->
+    <!-- Note: In a real constrained environment, we should have this locally. For now, using CDN. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        // ==========================================
+        // V-Admin-AES Vulnerability Implementation
+        // ==========================================
+        // 漏洞描述: 管理员密码在前端使用硬编码密钥进行AES加密
+        // 攻击场景: 攻击者查看源码获取密钥，可解密截获的流量或伪造登录请求
+        
+        const AES_KEY = "HackShopAdminKey";  // 16 bytes key
+        const AES_IV = "1234567890123456";   // 16 bytes IV
+
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const passwordInput = document.getElementById('password');
+            const password = passwordInput.value;
+            
+            if (password) {
+                try {
+                    // 解析密钥和IV
+                    const key = CryptoJS.enc.Utf8.parse(AES_KEY);
+                    const iv = CryptoJS.enc.Utf8.parse(AES_IV);
+
+                    // 使用CryptoJS进行AES加密 (CBC mode, Pkcs7 padding)
+                    const encrypted = CryptoJS.AES.encrypt(password, key, {
+                        iv: iv,
+                        mode: CryptoJS.mode.CBC,
+                        padding: CryptoJS.pad.Pkcs7
+                    }).toString();
+                    
+                    // 演示目的：在控制台打印信息
+                    console.group("🔐 V-Admin-AES Debug Info");
+                    console.log("Original Password:", password);
+                    console.log("AES Key:", AES_KEY);
+                    console.log("AES IV:", AES_IV);
+                    console.log("Encrypted Payload:", encrypted);
+                    console.groupEnd();
+                    
+                    // 将明文密码替换为密文提交
+                    passwordInput.value = encrypted;
+                    
+                    // 提交表单
+                    this.submit();
+                } catch (err) {
+                    console.error("Encryption failed:", err);
+                    // 如果加密失败，可以选择阻止提交或提交明文（这里选择阻止并提示）
+                    alert("安全模块加载失败，请刷新重试");
+                }
+            }
+        });
+    </script>
+</body>
+</html>

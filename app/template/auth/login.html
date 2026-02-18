@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}用户登录 - HackShop{% endblock %}
+
+{% block head %}
+<style>
+    /* 主内容区域 */
+    .main-content {
+        min-height: calc(100vh - 200px);
+        padding: 3rem 0;
+    }
+
+    /* 认证页面容器 */
+    .auth-container {
+        background: var(--white-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow-lg);
+        width: 100%;
+        max-width: 450px;
+        overflow: hidden;
+        margin: 0 auto;
+    }
+
+    /* 认证头部 */
+    .auth-header {
+        background: var(--primary-color);
+        color: var(--white-color);
+        padding: var(--spacing-xl);
+        text-align: center;
+    }
+
+    .auth-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    .auth-header p {
+        margin: var(--spacing-sm) 0 0 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+
+    /* 认证内容 */
+    .auth-content {
+        padding: var(--spacing-xl);
+    }
+
+    /* 表单样式 */
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        font-weight: 500;
+        color: var(--dark-color);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 2px solid var(--light-color);
+        border-radius: var(--border-radius-md);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+    }
+
+    .form-control.is-invalid {
+        border-color: var(--secondary-color);
+    }
+
+    .invalid-feedback {
+        color: var(--secondary-color);
+        font-size: 0.875rem;
+        margin-top: var(--spacing-xs);
+    }
+
+    /* 按钮样式 */
+    .btn-auth {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: none;
+        border-radius: var(--border-radius-md);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: var(--white-color);
+    }
+
+    .btn-primary:hover {
+        background: #34495e;
+        transform: translateY(-2px);
+        box-shadow: var(--box-shadow-md);
+    }
+
+    /* 分割线 */
+    .divider {
+        text-align: center;
+        margin: var(--spacing-lg) 0;
+        position: relative;
+    }
+
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--light-color);
+    }
+
+    .divider span {
+        background: var(--white-color);
+        padding: 0 var(--spacing-md);
+        color: var(--gray-color);
+        font-size: 0.9rem;
+        position: relative;
+        z-index: 1;
+    }
+
+
+
+    /* 链接样式 */
+    .auth-links {
+        text-align: center;
+        margin-top: var(--spacing-lg);
+    }
+
+    .auth-links a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+    }
+
+    .auth-links a:hover {
+        color: #34495e;
+        text-decoration: underline;
+    }
+
+    /* 提示消息 */
+    .alert {
+        padding: var(--spacing-md);
+        border-radius: var(--border-radius-md);
+        margin-bottom: var(--spacing-lg);
+        border: none;
+    }
+
+    .alert-success {
+        background: rgba(39, 174, 96, 0.1);
+        color: var(--success-color);
+    }
+
+    .alert-danger {
+        background: rgba(231, 76, 60, 0.1);
+        color: var(--secondary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-sm-10">
+                <div class="auth-container">
+                    <div class="auth-header">
+                        <h1><i class="fas fa-sign-in-alt"></i> 用户登录</h1>
+                        <p>登录以享受完整购物体验</p>
+                    </div>
+
+                    <div class="auth-content">
+                        <!-- 提示消息 -->
+                        <div id="alert-container"></div>
+
+                        <!-- 登录表单 -->
+                        <form id="login-form" method="POST" action="{{ url_for('auth.login') }}">
+                            <div class="form-group">
+                                <label class="form-label" for="login-email">邮箱地址</label>
+                                <input type="email" id="login-email" name="email" class="form-control" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="login-password">密码</label>
+                                <input type="password" id="login-password" name="password" class="form-control" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input type="checkbox" id="remember-me" name="remember" class="form-check-input">
+                                    <label class="form-check-label" for="remember-me">记住我</label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-auth btn-primary">
+                                <i class="fas fa-sign-in-alt"></i> 登录
+                            </button>
+
+                            <div class="auth-links">
+                                <a href="{{ url_for('auth.forgot_password') }}">忘记密码？</a>
+                            </div>
+                        </form>
+
+                
+                       
+
+                        <!-- 返回首页 -->
+                        <div class="auth-links">
+                            <a href="{{ url_for('main.index') }}">
+                                <i class="fas fa-arrow-left"></i> 返回首页
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 显示提示消息
+    function showAlert(message, type = 'info') {
+        const alertContainer = document.getElementById('alert-container');
+        alertContainer.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+    }
+
+    // 验证邮箱格式
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // 显示字段错误
+    function showFieldError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        const feedback = field.nextElementSibling;
+        field.classList.add('is-invalid');
+        if(feedback) feedback.textContent = message;
+    }
+
+    // 清除字段错误
+    function clearFieldError(fieldId) {
+        const field = document.getElementById(fieldId);
+        const feedback = field.nextElementSibling;
+        field.classList.remove('is-invalid');
+        if(feedback) feedback.textContent = '';
+    }
+
+    // 社交登录
+    function socialLogin(platform) {
+        showAlert(`${platform === 'wechat' ? '微信' : platform === 'qq' ? 'QQ' : '微博'}登录功能暂未开放`, 'info');
+    }
+
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        clearFieldError('login-email');
+        clearFieldError('login-password');
+
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const remember = document.getElementById('remember-me').checked;
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        let isValid = true;
+
+        if (!email) {
+            showFieldError('login-email', '请输入邮箱地址');
+            isValid = false;
+        } else if (!isValidEmail(email)) {
+            showFieldError('login-email', '请输入有效的邮箱地址');
+            isValid = false;
+        }
+
+        if (!password) {
+            showFieldError('login-password', '请输入密码');
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
+
+        fetch("{{ url_for('auth.login') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ email, password, remember })
+        })
+        .then(resp => resp.json().then(body => ({ status: resp.status, body })))
+        .then(({ status, body }) => {
+            if (status === 200 && body.status === 'ok') {
+                showAlert(body.message || '登录成功，正在跳转...', 'success');
+                setTimeout(() => { window.location.href = "{{ url_for('main.index') }}"; }, 1000);
+            } else {
+                if (body.lock_ttl !== undefined) {
+                    const seconds = typeof body.lock_ttl === 'number' ? body.lock_ttl : 300;
+                    showAlert(`账户已锁定，请 ${seconds}s 后重试`, 'danger');
+                } else if (body.fail_count !== undefined) {
+                    showAlert(`用户名或密码错误`, 'danger');
+                } else {
+                    showAlert(body.message || '登录失败，请稍后重试', 'danger');
+                }
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        })
+        .catch(() => {
+            showAlert('网络错误，请稍后重试', 'danger');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+
+    // 清除输入字段错误状态
+    document.querySelectorAll('.form-control').forEach(field => {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+            const feedback = this.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.textContent = '';
+            }
+        });
+    });
+</script>
+{% endblock %}

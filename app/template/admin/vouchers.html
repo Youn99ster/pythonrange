@@ -1,0 +1,113 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}储值券管理 - HackShop{% endblock %}
+{% block page_title %}储值券管理{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="table-container fade-in">
+        <div class="table-header">
+            <h3 class="table-title">储值券列表</h3>
+            <div class="table-actions">
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generateModal">
+                    <i class="fas fa-plus me-1"></i>生成储值券
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>代码</th>
+                        <th>金额</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>使用时间</th>
+                        <th>使用者ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for voucher in vouchers %}
+                    <tr>
+                        <td><code>{{ voucher.code }}</code></td>
+                        <td>¥{{ "%.2f"|format(voucher.amount) }}</td>
+                        <td>
+                            {% if voucher.status == '0' %}
+                            <span class="badge bg-success">未使用</span>
+                            {% else %}
+                            <span class="badge bg-secondary">已使用</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ voucher.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ voucher.used_at.strftime('%Y-%m-%d %H:%M') if voucher.used_at else '-' }}</td>
+                        <td>{{ voucher.used_by if voucher.used_by else '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">暂无数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+                    <a class="page-link" href="{{ url_for('admin.vouchers', page=pagination.prev_num) }}">上一页</a>
+                </li>
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <li class="page-item {{ 'active' if page == pagination.page }}">
+                            <a class="page-link" href="{{ url_for('admin.vouchers', page=page) }}">{{ page }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+                    <a class="page-link" href="{{ url_for('admin.vouchers', page=pagination.next_num) }}">下一页</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Generate Voucher Modal -->
+<div class="modal fade" id="generateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">生成储值券</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.generate_vouchers') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">面值 (¥)</label>
+                        <select name="amount" class="form-select" required>
+                            <option value="50">50元</option>
+                            <option value="100">100元</option>
+                            <option value="200">200元</option>
+                            <option value="500">500元</option>
+                            <option value="1000">1000元</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">生成数量</label>
+                        <input type="number" name="count" class="form-control" value="1" min="1" max="50" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">确认生成</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

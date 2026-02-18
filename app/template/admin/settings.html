@@ -1,0 +1,27 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}系统设置 - HackShop{% endblock %}
+{% block page_title %}系统设置{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-container fade-in">
+            <div class="form-header">
+                <h3 class="form-title">基本设置</h3>
+            </div>
+            <form>
+                <div class="mb-3">
+                    <label class="form-label">网站名称</label>
+                    <input type="text" class="form-control" value="HackShop">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">联系邮箱</label>
+                    <input type="email" class="form-control" value="admin@hackshop.local">
+                </div>
+                <button type="submit" class="btn btn-primary">保存更改</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}系统初始化 - HackShop{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">系统初始化 / Setup</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">确保已完成数据库迁移后再执行初始化。本页支持幂等操作。</p>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            商品数据量
+                            <span class="badge bg-info">{{ status.goods_count }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            是否存在管理员账号(admin)
+                            <span class="badge {{ 'bg-success' if status.has_admin else 'bg-secondary' }}">{{ '是' if status.has_admin else '否' }}</span>
+                        </li>
+                    </ul>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">管理员用户名</label>
+                            <input type="text" class="form-control" name="admin_username" value="admin" {% if not status.can_init %}disabled{% endif %}>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">管理员密码</label>
+                            <input type="text" class="form-control" name="admin_password" value="admin123" {% if not status.can_init %}disabled{% endif %}>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="initProducts" name="init_products" checked {% if not status.can_init %}disabled{% endif %}>
+                            <label class="form-check-label" for="initProducts">初始化产品数据（来自 product.json）</label>
+                        </div>
+                        {% if status.can_init %}
+                        <button type="submit" class="btn btn-primary">执行初始化</button>
+                        {% else %}
+                        <button type="button" class="btn btn-secondary" disabled>系统已初始化</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

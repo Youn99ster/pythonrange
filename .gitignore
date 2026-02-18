@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+migrations/
+CLAUDE.md
+memory.md
+prototype_flaskfront.md
+*.log
+prototype/
+docs/
+.claude/

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}页面不存在 - HackShop{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <h3 class="mb-2">404 - 页面不存在</h3>
+    <p class="text-muted">你访问的页面不存在或已被移动。</p>
+    <div class="alert alert-light border">
+      <div><strong>request_id：</strong><code>{{ request_id }}</code></div>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">回到首页</a>
+  </div>
+</div>
+{% endblock %}

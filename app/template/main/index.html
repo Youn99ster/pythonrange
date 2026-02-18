@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}HackShop - 首页{% endblock %}
+
+{% block head %}
+<style>
+    .main-content {
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+    .products-section {
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--box-shadow-sm);
+        padding: var(--spacing-xl);
+        margin-bottom: var(--spacing-xl);
+    }
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+        border-bottom: 2px solid var(--light-color);
+        padding-bottom: var(--spacing-md);
+    }
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--dark-color);
+        margin: 0;
+    }
+    .filter-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        align-items: center;
+    }
+    .filter-select {
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius-sm);
+        padding: 0.5rem;
+        background-color: var(--white-color);
+    }
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: var(--spacing-xl);
+    }
+    .product-card {
+        background: var(--white-color);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--box-shadow-sm);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 1px solid var(--light-color);
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--box-shadow-lg);
+    }
+    .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    .product-card:hover .product-image {
+        transform: scale(1.05);
+    }
+    .product-info {
+        padding: var(--spacing-md);
+    }
+    .product-name {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: var(--dark-color);
+        margin-bottom: var(--spacing-sm);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .product-price {
+        font-size: 1.2rem;
+        color: var(--secondary-color);
+        font-weight: bold;
+        margin-bottom: var(--spacing-md);
+    }
+    .product-description {
+        color: var(--gray-color);
+        font-size: 0.9rem;
+        margin-bottom: var(--spacing-md);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .product-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
+    .btn-view {
+        width: 100%;
+        padding: 0.5rem;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        background-color: #dc3545; /* Red background */
+        color: white; /* White text */
+        text-align: center;
+    }
+    .btn-view:hover {
+        background-color: #c82333; /* Darker red on hover */
+        transform: translateY(-1px);
+    }
+    .footer {
+        background-color: var(--dark-color);
+        color: white;
+        padding: var(--spacing-xxl) 0;
+        margin-top: var(--spacing-xxl);
+    }
+    .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-xl);
+        margin-bottom: var(--spacing-xl);
+    }
+    .footer-section h5 {
+        color: var(--white-color);
+        margin-bottom: var(--spacing-md);
+        font-weight: 600;
+    }
+    .footer-section ul {
+        list-style: none;
+        padding: 0;
+    }
+    .footer-section ul li {
+        margin-bottom: var(--spacing-sm);
+    }
+    .footer-section a {
+        color: #bdc3c7;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    .footer-section a:hover {
+        color: var(--white-color);
+    }
+    .footer-bottom {
+        text-align: center;
+        padding-top: var(--spacing-xl);
+        border-top: 1px solid #34495e;
+        color: #bdc3c7;
+    }
+    @media (max-width: 768px) {
+        .product-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--spacing-md);
+        }
+        .section-header {
+            flex-direction: column;
+            gap: var(--spacing-md);
+            align-items: flex-start;
+        }
+        .filter-controls {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+    @media (max-width: 576px) {
+        .product-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    .pulse {
+        animation: pulse 0.3s ease-in-out;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container">
+        <section class="products-section">
+            <div class="section-header">
+                <h2 class="section-title">热门商品</h2>
+                <div class="filter-controls">
+                    <select class="filter-select" onchange="filterProducts(this.value)">
+                        <option value="default">默认排序</option>
+                        <option value="price-low">价格从低到高</option>
+                        <option value="price-high">价格从高到低</option>
+                        <option value="sales">销量优先</option>
+                        <option value="rating">评分优先</option>
+                    </select>
+                    <select class="filter-select" onchange="filterByCategory(this.value)">
+                        <option value="all">全部分类</option>
+                        <option value="digital">手机数码</option>
+                        <option value="computer">电脑办公</option>
+                        <option value="entertainment">影音娱乐</option>
+                        <option value="clothing">服装鞋帽</option>
+                    </select>
+                </div>
+            </div>
+            <div class="product-grid" id="productGrid">
+                {% for product in goods %}
+                {% set safe_content = product.content | replace("'", "\\'") | replace('"', '&quot;') | replace('\n', '') %}
+                <div class="product-card"
+                     data-id="{{ product.id }}"
+                     data-category="{{ product.category }}"
+                     data-price="{{ product.price }}"
+                     data-sales="{{ product.sales_count }}"
+                     data-rating="{{ product.rating_avg }}"
+                     onclick="goToProductDetail(event, {{ product.id }}, '{{ product.price | int }}', '{{ product.mainimg }}', '{{ safe_content }}')">
+                    <img src="{{ product.mainimg }}" alt="{{ product.goodsname }}" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.goodsname }}</h3>
+                        <p class="product-description">{{ product.content }}</p>
+                        <div class="product-price">¥{{ "{:,.2f}".format(product.price) }}</div>
+                        <div class="product-actions">
+                            <button class="btn-view" onclick="goToProductDetail(event, {{ product.id }}, '{{ product.price | int }}', '{{ product.mainimg }}', '{{ safe_content }}')">
+                                <i class="fas fa-eye"></i> 查看详情
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const CART_URL = "{{ url_for('order.cart') }}";
+    const ADD_TO_CART_URL = "{{ url_for('order.add_to_cart') }}";
+    
+    function addToCart(button) {
+        const productCard = button.closest('.product-card');
+        const productId = productCard.dataset.id;
+        const productName = productCard.querySelector('.product-name').textContent;
+        
+        fetch(ADD_TO_CART_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                goods_id: productId,
+                quantity: 1,
+                check_exists: true
+            })
+        })
+        .then(response => {
+            if (response.status === 401) {
+                // Not logged in
+                return response.json().then(data => {
+                    window.location.href = data.redirect || '/auth/user/login';
+                    throw new Error('Redirecting to login');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Update Badge
+                const cartBadge = document.querySelector('.cart-badge');
+                if (cartBadge) {
+                    if (data.cart_count !== undefined) {
+                        cartBadge.textContent = data.cart_count;
+                    } else {
+                         let currentCount = parseInt(cartBadge.textContent) || 0;
+                         cartBadge.textContent = currentCount + 1;
+                    }
+                    cartBadge.style.display = 'block'; // Ensure it's visible
+                }
+                
+                showNotification('"' + productName + '" 已添加到购物车', 'success');
+                
+                // Animate Icon
+                const cartIcon = document.querySelector('.cart-icon');
+                if (cartIcon) {
+                    cartIcon.classList.add('pulse');
+                    setTimeout(() => { cartIcon.classList.remove('pulse'); }, 300);
+                }
+            } else {
+                showNotification(data.message || '添加失败', 'danger');
+            }
+        })
+        .catch(error => {
+            if (error.message !== 'Redirecting to login') {
+                console.error('Error:', error);
+                showNotification('系统错误，请稍后重试', 'danger');
+            }
+        });
+    }
+    function goToProductDetail(event, id, price, image, description) {
+        if (event) { event.stopPropagation(); }
+        const productInfo = { id, price, image, description };
+        try {
+            localStorage.setItem('selectedProduct', JSON.stringify(productInfo));
+        } catch(e) {}
+        window.location.href = "/product-detail/" + id;
+    }
+    function buyNow(button) {
+        // Reuse addToCart logic but with redirection
+        const productCard = button.closest('.product-card');
+        const productId = productCard.dataset.id;
+        
+        fetch(ADD_TO_CART_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                goods_id: productId,
+                quantity: 1
+            })
+        })
+        .then(response => {
+             if (response.status === 401) {
+                return response.json().then(data => {
+                    window.location.href = data.redirect || '/auth/user/login';
+                    throw new Error('Redirecting to login');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                window.location.href = CART_URL;
+            } else {
+                showNotification(data.message || '购买失败', 'danger');
+            }
+        })
+        .catch(error => {
+            if (error.message !== 'Redirecting to login') {
+                console.error('Error:', error);
+                showNotification('系统错误，请稍后重试', 'danger');
+            }
+        });
+    }
+    function filterProducts(sortType) {
+        const productGrid = document.getElementById('productGrid');
+        const products = Array.from(productGrid.children);
+        products.sort((a, b) => {
+            switch(sortType) {
+                case 'price-low': return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                case 'price-high': return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+                case 'sales': return parseInt(b.dataset.sales) - parseInt(a.dataset.sales);
+                case 'rating': return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+                default: return 0;
+            }
+        });
+        products.forEach(product => productGrid.appendChild(product));
+        showNotification('已按' + getSortTypeName(sortType) + '排序', 'info');
+    }
+    function getSortTypeName(type) {
+        const names = { 'price-low': '价格从低到高', 'price-high': '价格从高到低', 'sales': '销量优先', 'rating': '评分优先' };
+        return names[type] || '默认排序';
+    }
+    function filterByCategory(category) {
+        const products = document.querySelectorAll('.product-card');
+        products.forEach(product => {
+            product.style.display = (category === 'all' || product.dataset.category === category) ? 'block' : 'none';
+        });
+        showNotification('已筛选' + getCategoryName(category) + '商品', 'info');
+    }
+    function getCategoryName(category) {
+        const names = { 'all': '全部', 'digital': '手机数码', 'computer': '电脑办公', 'entertainment': '影音娱乐', 'clothing': '服装鞋帽' };
+        return names[category] || '全部';
+    }
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+        notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.body.appendChild(notification);
+        setTimeout(() => { if (notification.parentNode) { notification.remove(); } }, 3000);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('fade-in-up'); } });
+        }, observerOptions);
+        const productCards = document.querySelectorAll('.product-card');
+        productCards.forEach(card => observer.observe(card));
+    });
+</script>
+{% endblock %}

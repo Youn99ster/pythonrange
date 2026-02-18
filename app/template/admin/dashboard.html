@@ -1,0 +1,132 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}仪表盘 - HackShop{% endblock %}
+{% block page_title %}仪表盘{% endblock %}
+
+{% block content %}
+<div id="dashboard-content" class="page-content">
+    <!-- 统计卡片 -->
+    <div class="stats-grid fade-in">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-card-title">总销售额</div>
+                <div class="stat-card-icon primary">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">¥{{ '%.2f'|format(stats.total_sales) }}</div>
+            <div class="stat-card-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>12.5%</span>
+                <span>较上月</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-card-title">订单数量</div>
+                <div class="stat-card-icon success">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.orders_count }}</div>
+            <div class="stat-card-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>8.3%</span>
+                <span>较上月</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-card-title">用户数量</div>
+                <div class="stat-card-icon warning">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.users_count }}</div>
+            <div class="stat-card-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>15.2%</span>
+                <span>较上月</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-card-title">商品数量</div>
+                <div class="stat-card-icon danger">
+                    <i class="fas fa-box"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ stats.goods_count }}</div>
+            <div class="stat-card-change negative">
+                <i class="fas fa-arrow-down"></i>
+                <span>2.1%</span>
+                <span>较上月</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最新订单 -->
+    <div class="table-container fade-in">
+        <div class="table-header">
+            <h3 class="table-title">最近30天订单</h3>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>订单号</th>
+                        <th>用户</th>
+                        <th>商品名称</th>
+                        <th>商品数量</th>
+                        <th>金额</th>
+                        <th>状态</th>
+                        <th>下单时间</th>
+                        <!-- 操作列已删除 -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in recent_orders %}
+                    <tr>
+                        <td>{{ o.order_number }}</td>
+                        <td>{{ o.username }}</td>
+                        <td class="text-truncate" title="{{ o.product_name }}">{{ o.product_name }}</td>
+                        <td>{{ o.product_quantity }}</td>
+                        <td>¥{{ o.amount }}</td>
+                        <td><span class="status-badge {{ o.status_class }}">{{ o.status_label }}</span></td>
+                        <td>{{ o.date }}</td>
+                        <!-- 操作列对应的单元格已删除 -->
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">暂无订单</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pagination-container">
+            <div class="pagination-info">
+                最近30天共 {{ pagination.total }} 条记录；当前显示 {{ recent_orders|length }} 条
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{% if pagination.has_prev %}{{ url_for('admin.dashboard', page=pagination.prev_num) }}{% else %}#{% endif %}">上一页</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">第 {{ pagination.page }} / {{ pagination.pages }} 页</a>
+                    </li>
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{% if pagination.has_next %}{{ url_for('admin.dashboard', page=pagination.next_num) }}{% else %}#{% endif %}">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}

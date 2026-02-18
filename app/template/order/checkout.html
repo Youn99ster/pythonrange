@@ -1,0 +1,615 @@
+{% extends "base.html" %}
+
+{% block title %}订单确认 - HackShop{% endblock %}
+
+{% block head %}
+<style>
+    /* 结算流程 */
+    .checkout-container {
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--box-shadow-sm);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .checkout-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: var(--spacing-xl);
+        text-align: center;
+    }
+
+    .checkout-title {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .checkout-subtitle {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-top: var(--spacing-sm);
+    }
+
+    /* 内容区块 */
+    .checkout-section {
+        padding: var(--spacing-xl);
+        border-bottom: 1px solid #eee;
+    }
+
+    .checkout-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-title {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    /* 地址管理 */
+    .address-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .address-item {
+        border: 2px solid #ddd;
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-md);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .address-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--box-shadow-sm);
+    }
+
+    .address-item.selected {
+        border-color: var(--primary-color);
+        background-color: #e3f2fd;
+    }
+
+    .address-item.selected::after {
+        content: '\f00c';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        top: var(--spacing-sm);
+        right: var(--spacing-sm);
+        color: var(--success-color);
+        font-size: 1.2rem;
+    }
+
+    .address-name {
+        font-weight: bold;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .address-phone {
+        color: var(--gray-color);
+        font-size: 0.9rem;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .address-text {
+        color: var(--dark-color);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .add-address-btn {
+        border: 2px dashed #ddd;
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-xl);
+        text-align: center;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 120px;
+    }
+
+    .add-address-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background-color: #f8f9fa;
+    }
+
+    .add-address-btn i {
+        font-size: 2rem;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    /* 商品清单 */
+    .order-summary {
+        background-color: #f8f9fa;
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md) 0;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .order-item-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .order-item-info {
+        flex: 1;
+    }
+
+    .order-item-name {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .order-item-specs {
+        font-size: 0.9rem;
+        color: var(--gray-color);
+    }
+
+    .order-item-price {
+        font-weight: bold;
+        color: var(--secondary-color);
+        font-size: 1.1rem;
+    }
+
+    .order-item-quantity {
+        color: var(--gray-color);
+        font-size: 0.9rem;
+    }
+
+    /* 价格计算 */
+    .price-summary {
+        background-color: var(--white-color);
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-xl);
+    }
+
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid #eee;
+    }
+
+    .price-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .price-label {
+        color: var(--gray-color);
+    }
+
+    .price-value {
+        font-weight: 600;
+    }
+
+    .price-row.total {
+        font-size: 1.2rem;
+        color: var(--primary-color);
+        border-top: 2px solid #ddd;
+        padding-top: var(--spacing-md);
+        margin-top: var(--spacing-md);
+    }
+
+    .price-row.total .price-value {
+        color: var(--secondary-color);
+        font-size: 1.5rem;
+    }
+
+    /* 支付方式 */
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .payment-method {
+        border: 2px solid #ddd;
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-md);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .payment-method:hover {
+        border-color: var(--primary-color);
+    }
+
+    .payment-method.selected {
+        border-color: var(--primary-color);
+        background-color: #e3f2fd;
+    }
+
+    .payment-method i {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+    }
+
+    .payment-info {
+        flex: 1;
+    }
+
+    .payment-name {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .payment-description {
+        font-size: 0.9rem;
+        color: var(--gray-color);
+    }
+
+    /* 底部操作栏 */
+    .checkout-footer {
+        padding: var(--spacing-xl);
+        background-color: #f8f9fa;
+        border-top: 1px solid #ddd;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: var(--spacing-lg);
+    }
+
+    .total-amount {
+        font-size: 1.2rem;
+        color: var(--dark-color);
+    }
+
+    .total-amount span {
+        color: var(--secondary-color);
+        font-size: 1.8rem;
+        font-weight: bold;
+    }
+
+    .btn-confirm {
+        background-color: var(--success-color);
+        color: white;
+        font-size: 1.2rem;
+        padding: 1rem 3rem;
+        border: none;
+        border-radius: var(--border-radius-md);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-confirm:hover {
+        background-color: #229954;
+        transform: translateY(-2px);
+        box-shadow: var(--box-shadow-md);
+    }
+    
+    .btn-confirm:disabled {
+        background-color: #95a5a6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* 成功页面 */
+    .success-content {
+        text-align: center;
+        padding: var(--spacing-xxl) 0;
+        display: none; /* 默认隐藏 */
+    }
+
+    .success-icon {
+        font-size: 4rem;
+        color: var(--success-color);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .success-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .success-message {
+        font-size: 1.1rem;
+        color: var(--gray-color);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .order-details {
+        background-color: #f8f9fa;
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-xl);
+        margin: var(--spacing-xl) 0;
+        text-align: left;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <div id="checkoutForm">
+        <div class="checkout-header">
+            <h2 class="checkout-title">订单确认</h2>
+            <p class="checkout-subtitle">请确认您的收货地址和订单信息</p>
+        </div>
+
+        <!-- 1. 收货地址 -->
+        <div class="checkout-section">
+            <h3 class="section-title"><i class="fas fa-map-marker-alt me-2"></i>收货地址</h3>
+            <div class="address-list" id="addressList">
+                <!-- JS 渲染地址列表 -->
+            </div>
+        </div>
+
+        <!-- 2. 订单信息 -->
+        <div class="checkout-section">
+            <h3 class="section-title"><i class="fas fa-list-alt me-2"></i>订单信息</h3>
+            <div class="order-summary" id="orderSummary">
+                {% for item in order.items %}
+                <div class="order-item">
+                    <img src="{{ item.goods.mainimg }}" alt="{{ item.goods.goodsname }}" class="order-item-image">
+                    <div class="order-item-info">
+                        <div class="order-item-name">{{ item.goods.goodsname }}</div>
+                        <div class="order-item-specs">{{ item.goods.model or '' }}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="order-item-price">¥{{ "{:.2f}".format(item.unit_price) }}</div>
+                        <div class="order-item-quantity">x{{ item.quantity }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="price-summary">
+                <div class="price-row">
+                    <span class="price-label">商品总额</span>
+                    <span class="price-value" id="orderSubtotal">¥{{ "{:.2f}".format(order.total_amount) }}</span>
+                </div>
+                <div class="price-row">
+                    <span class="price-label">运费</span>
+                    <span class="price-value">¥0.00</span>
+                </div>
+                <div class="price-row total">
+                    <span class="price-label">应付总额</span>
+                    <span class="price-value" id="orderTotal">¥{{ "{:.2f}".format(order.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 支付方式 -->
+        <div class="checkout-section">
+            <h3 class="section-title"><i class="fas fa-credit-card me-2"></i>支付方式</h3>
+            <div class="payment-methods">
+                <!-- 余额支付 (默认选中) -->
+                <div class="payment-method selected" onclick="selectPayment(this, 'balance')">
+                    <i class="fas fa-wallet text-warning"></i>
+                    <div class="payment-info">
+                        <div class="payment-name">余额支付</div>
+                        <div class="payment-description">当前余额: <span id="userBalance">¥...</span></div>
+                    </div>
+                </div>
+                
+                <!-- 微信支付 (静态占位) -->
+                <div class="payment-method static-method" style="cursor: default; opacity: 0.6; border-color: #ddd;">
+                    <i class="fab fa-weixin text-success"></i>
+                    <div class="payment-info">
+                        <div class="payment-name">微信支付</div>
+                        <div class="payment-description">暂不可用</div>
+                    </div>
+                </div>
+                
+                <!-- 支付宝 (静态占位) -->
+                <div class="payment-method static-method" style="cursor: default; opacity: 0.6; border-color: #ddd;">
+                    <i class="fab fa-alipay text-primary"></i>
+                    <div class="payment-info">
+                        <div class="payment-name">支付宝</div>
+                        <div class="payment-description">暂不可用</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部操作栏 -->
+        <div class="checkout-footer">
+            <div class="total-amount">
+                实付款：<span id="footerTotal">¥{{ "{:.2f}".format(order.total_amount) }}</span>
+            </div>
+            <button class="btn-confirm" onclick="processPayment()">立即支付 <i class="fas fa-check ms-2"></i></button>
+        </div>
+    </div>
+
+    <!-- 支付成功页面 (默认隐藏) -->
+    <div id="successPage" class="success-content">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h3 class="success-title">支付成功！</h3>
+        <p class="success-message">感谢您的购买，您的订单已成功处理。</p>
+        
+        <div class="order-details">
+            <p><strong>订单编号：</strong> <span id="successOrderNo">2023052012345678</span></p>
+            <p><strong>支付金额：</strong> <span id="successAmount" class="text-danger fw-bold">¥0.00</span></p>
+            <p><strong>支付方式：</strong> <span id="successPayment">微信支付</span></p>
+            <p><strong>预计送达：</strong> <span id="successDelivery">2023-05-23</span></p>
+        </div>
+
+        <div class="mt-4">
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary me-3">返回首页</a>
+            <a href="#" class="btn btn-outline-primary">查看订单详情</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Address Data
+    let addresses = [];
+
+    let selectedAddressId = null;
+    let selectedPaymentMethod = 'balance';
+    // Use server-side data for order items
+    // Order ID and total are available from the template variables if needed, 
+    // but the page is already rendered with them.
+    // We just need to handle payment submission.
+    const orderId = "{{ order.id }}";
+    const orderTotal = parseFloat("{{ order.total_amount }}");
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch addresses from API
+        fetchAddresses();
+        // Fetch user balance
+        fetchBalance();
+    });
+
+
+    // 获取用户余额
+    function fetchBalance() {
+        fetch('/user/balance')
+            .then(response => response.json())
+            .then(data => {
+                if (data.balance !== undefined) {
+                    document.getElementById('userBalance').textContent = '¥' + parseFloat(data.balance).toFixed(2);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching balance:', error);
+                document.getElementById('userBalance').textContent = '¥0.00 (获取失败)';
+            });
+    }
+
+
+    // 获取地址列表
+    function fetchAddresses() {
+        fetch('/user/address/list')
+            .then(response => response.json())
+            .then(data => {
+                addresses = data;
+                if (addresses.length > 0) {
+                    selectedAddressId = addresses[0].id;
+                }
+                renderAddresses();
+            })
+            .catch(error => {
+                console.error('Error fetching addresses:', error);
+                // alert('获取地址失败，请稍后重试');
+            });
+    }
+
+    // 渲染地址列表
+    function renderAddresses() {
+        const container = document.getElementById('addressList');
+        container.innerHTML = '';
+        
+        if (addresses.length === 0) {
+            container.innerHTML = '<div class="text-center py-3 text-muted">暂无收货地址，请添加</div>';
+        }
+
+        addresses.forEach(addr => {
+            const html = `
+                <div class="address-item ${addr.id === selectedAddressId ? 'selected' : ''}" 
+                     onclick="selectAddress(${addr.id})">
+                    <div class="address-name">${addr.receiver}</div>
+                    <div class="address-phone">${addr.phone}</div>
+                    <div class="address-text">
+                        ${addr.addressname}
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+
+        // 添加"新增地址"按钮
+        container.innerHTML += `
+            <div class="add-address-btn" onclick="window.location.href='{{ url_for('user.profile', section='address') }}'">
+                <i class="fas fa-plus"></i>
+                <span>管理地址</span>
+            </div>
+        `;
+    }
+
+    // 选择地址
+    function selectAddress(id) {
+        selectedAddressId = id;
+        renderAddresses();
+    }
+
+    // 选择支付方式
+    function selectPayment(element, method) {
+        document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+        selectedPaymentMethod = method;
+    }
+
+    // 处理支付
+function processPayment() {
+    if (!selectedAddressId) {
+        alert('请选择收货地址');
+        document.querySelector('.checkout-header').scrollIntoView({behavior: 'smooth'});
+        return;
+    }
+
+    const btn = document.querySelector('.btn-confirm');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>正在处理...';
+    btn.disabled = true;
+
+    // 创建一个隐藏的表单进行提交
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ url_for('order.checkout', order_id=order.id) }}";
+
+    // 添加地址ID
+    const addressInput = document.createElement('input');
+    addressInput.type = 'hidden';
+    addressInput.name = 'address_id';
+    addressInput.value = selectedAddressId;
+    form.appendChild(addressInput);
+
+    // 添加支付方式
+    const paymentInput = document.createElement('input');
+    paymentInput.type = 'hidden';
+    paymentInput.name = 'payment_method';
+    paymentInput.value = selectedPaymentMethod;
+    form.appendChild(paymentInput);
+
+    // 添加到文档并提交
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock %}

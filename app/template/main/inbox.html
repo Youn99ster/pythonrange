@@ -1,0 +1,720 @@
+{% extends "base.html" %}
+
+{% block title %}HackShop - 模拟收件箱{% endblock %}
+
+{% block head %}
+<style>
+    /* 主内容区域 */
+    .main-content {
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+
+    /* 收件箱样式 */
+    .inbox-container {
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--box-shadow-sm);
+        overflow: hidden;
+    }
+
+    .inbox-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: var(--spacing-xl);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .inbox-title {
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .inbox-stats {
+        display: flex;
+        gap: var(--spacing-xl);
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    /* 邮件分类标签 */
+    .email-categories {
+        display: flex;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md);
+        background-color: var(--light-color);
+        border-bottom: 1px solid #ddd;
+        flex-wrap: wrap; /* 允许换行 */
+    }
+
+    .category-tag {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        background-color: var(--white-color);
+        border: 1px solid #ddd;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        white-space: nowrap; /* 防止标签内文字换行 */
+    }
+
+    .category-tag:hover {
+        border-color: var(--primary-color);
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .category-tag.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    /* 搜索和筛选区域 */
+    .inbox-controls {
+        padding: var(--spacing-md);
+        background-color: var(--white-color);
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--spacing-md);
+        flex-wrap: wrap; /* 允许换行 */
+    }
+
+    .search-input-group {
+        flex: 1;
+        max-width: 400px;
+        min-width: 200px; /* 确保在小屏幕下有最小宽度 */
+    }
+
+    .search-input-group input {
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius-md);
+        padding: 0.5rem 1rem;
+        width: 100%;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap; /* 允许换行 */
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ddd;
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap; /* 防止按钮内文字换行 */
+    }
+
+    .filter-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    /* 邮件列表 */
+    .email-list {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .email-item {
+        border-bottom: 1px solid #eee;
+        padding: var(--spacing-md);
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+    }
+
+    .email-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .email-item.unread {
+        background-color: #e3f2fd;
+        border-left: 4px solid var(--info-color);
+    }
+
+    .email-item.suspicious {
+        background-color: #fff3e0;
+        border-left: 4px solid var(--warning-color);
+    }
+
+    .email-item.dangerous {
+        background-color: #ffebee;
+        border-left: 4px solid var(--secondary-color);
+    }
+
+    .email-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .email-sender {
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    .email-time {
+        font-size: 0.8rem;
+        color: var(--gray-color);
+    }
+
+    .email-subject {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        color: var(--dark-color);
+    }
+
+    .email-preview {
+        font-size: 0.9rem;
+        color: var(--gray-color);
+        line-height: 1.4;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .email-tags {
+        display: flex;
+        gap: var(--spacing-xs);
+        flex-wrap: wrap;
+    }
+
+    .email-tag {
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .email-tag.system {
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .email-tag.password {
+        background-color: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .email-tag.order {
+        background-color: #e8f5e8;
+        color: #388e3c;
+    }
+
+    .email-tag.security {
+        background-color: #ffebee;
+        color: #d32f2f;
+    }
+
+    /* 邮件详情模态框 */
+    .email-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+
+    .email-modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .email-modal-content {
+        background-color: white;
+        border-radius: var(--border-radius-lg);
+        max-width: 800px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: var(--box-shadow-lg);
+    }
+
+    .email-modal-header {
+        padding: var(--spacing-xl);
+        border-bottom: 1px solid #ddd;
+        background-color: var(--light-color);
+        border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    }
+
+    .email-modal-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .email-modal-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        color: var(--gray-color);
+    }
+
+    .email-modal-body {
+        padding: var(--spacing-xl);
+    }
+
+    .email-content {
+        line-height: 1.6;
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .security-warning {
+        background-color: #fff3e0;
+        border: 1px solid var(--warning-color);
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-md);
+        margin: var(--spacing-md) 0;
+    }
+
+    .security-warning.danger {
+        background-color: #ffebee;
+        border-color: var(--secondary-color);
+    }
+
+    .security-warning h5 {
+        color: var(--warning-color);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .security-warning.danger h5 {
+        color: var(--secondary-color);
+    }
+
+    .email-actions {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: flex-end;
+        padding: var(--spacing-md);
+        border-top: 1px solid #ddd;
+    }
+
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn.primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .action-btn.primary:hover {
+        background-color: #34495e;
+    }
+
+    .action-btn.danger {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+
+    .action-btn.danger:hover {
+        background-color: #c0392b;
+    }
+
+    .action-btn.secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .action-btn.secondary:hover {
+        background-color: #5a6268;
+    }
+
+    /* 页脚 */
+    .footer {
+        background-color: var(--dark-color);
+        color: white;
+        padding: var(--spacing-xxl) 0;
+        margin-top: var(--spacing-xxl);
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-xl);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .footer-section h5 {
+        color: var(--white-color);
+        margin-bottom: var(--spacing-md);
+        font-weight: 600;
+    }
+
+    .footer-section ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .footer-section ul li {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .footer-section a {
+        color: #bdc3c7;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .footer-section a:hover {
+        color: var(--white-color);
+    }
+
+    .footer-bottom {
+        text-align: center;
+        padding-top: var(--spacing-xl);
+        border-top: 1px solid #34495e;
+        color: #bdc3c7;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .search-box input {
+            width: 150px;
+        }
+
+        .inbox-header {
+            flex-direction: column;
+            gap: var(--spacing-md);
+            text-align: center;
+        }
+
+        .inbox-stats {
+            justify-content: center;
+        }
+
+        .inbox-controls {
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .search-input-group {
+            max-width: 100%;
+        }
+
+        .filter-buttons {
+            justify-content: center;
+        }
+
+        .email-modal-content {
+            width: 95%;
+            max-height: 90vh;
+        }
+
+        .navbar-nav {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .navbar-nav .nav-link {
+            border-bottom: 1px solid var(--light-color);
+        }
+    }
+
+    /* 动画效果 */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .pulse {
+        animation: pulse 0.3s ease-in-out;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    /* 自定义滚动条 */
+    .email-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .email-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .email-list::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+
+    .email-list::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>
+{% endblock %}
+
+    {% block content %}
+        <div class="container">
+            <!-- 收件箱区域 -->
+            <div class="inbox-container fade-in-up">
+                <!-- 收件箱头部 -->
+                <div class="inbox-header">
+                    <h1 class="inbox-title">
+                        <i class="fas fa-inbox me-2"></i>模拟收件箱
+                    </h1>
+                    <div class="inbox-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="totalCount">12</span>
+                            <span class="stat-label">总邮件</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="unreadCount">3</span>
+                            <span class="stat-label">未读</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="securityCount">2</span>
+                            <span class="stat-label">安全警告</span>
+                        </div>
+                    </div>
+                </div>
+    
+                
+    
+    
+    
+                <!-- 邮件列表 -->
+                <div class="email-list" id="emailList">
+                    {% for mail in mail_list %}
+                    <div class="email-item {% if not mail.is_read %}unread{% endif %}" data-id="{{ mail.id }}" data-time="{{ mail.created_at.strftime('%Y-%m-%d %H:%M:%S') }}">
+                        <div class="email-header">
+                            <div class="email-sender">{{ mail.sender }}</div>
+                            <div class="email-time">{{ mail.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        </div>
+                        <div class="email-subject">{{ mail.subject }}</div>
+                        <div class="email-preview">{{ (mail.content[:120] ~ ('...' if mail.content|length > 120 else '')) }}</div>
+                        <div class="email-content-hidden" style="display:none;">{{ mail.content }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    
+        <!-- 邮件详情模态框 -->
+        <div class="email-modal" id="emailModal">
+            <div class="email-modal-content">
+                <div class="email-modal-header">
+                    <h3 class="email-modal-title" id="modalTitle">邮件标题</h3>
+                    <div class="email-modal-meta">
+                        <span id="modalSender">发件人</span>
+                        <span id="modalTime">时间</span>
+                    </div>
+                </div>
+                <div class="email-modal-body">
+                    <div class="email-content" id="modalContent">
+                        邮件内容
+                    </div>
+                    <div class="security-warning" id="securityWarning" style="display: none;">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>安全警告</h5>
+                        <p id="securityWarningText">此邮件可能包含安全风险，请谨慎处理。</p>
+                    </div>
+                </div>
+                <div class="email-actions">
+                    <button class="action-btn secondary" onclick="closeEmailModal()">关闭</button>
+                    <button class="action-btn primary" onclick="replyEmail()">回复</button>
+                    <button class="action-btn danger" onclick="deleteEmail()">删除</button>
+                </div>
+            </div>
+        </div>
+    {% endblock %}
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.email-item').forEach(item => {
+            item.addEventListener('click', function() {
+                showEmailModal(this);
+            });
+        });
+        updateStats();
+        initPolling();
+    });
+
+    // 显示邮件详情模态框
+    function showEmailModal(emailItem) {
+        const modal = document.getElementById('emailModal');
+        const title = document.getElementById('modalTitle');
+        const sender = document.getElementById('modalSender');
+        const time = document.getElementById('modalTime');
+        const content = document.getElementById('modalContent');
+        const securityWarning = document.getElementById('securityWarning');
+        const securityWarningText = document.getElementById('securityWarningText');
+
+        const subject = emailItem.querySelector('.email-subject').textContent;
+        const senderText = emailItem.querySelector('.email-sender').textContent.trim();
+        const timeText = emailItem.querySelector('.email-time').textContent;
+        const emailContent = emailItem.querySelector('.email-content-hidden').innerHTML;
+        const mailId = parseInt(emailItem.getAttribute('data-id')) || 0;
+
+        // 设置模态框内容
+        title.textContent = subject;
+        sender.innerHTML = `<i class="fas fa-user me-1"></i>${senderText}`;
+        time.textContent = timeText;
+        content.innerHTML = emailContent;
+
+        securityWarning.style.display = 'none';
+
+        // 标记为已读
+        emailItem.classList.remove('unread');
+        updateStats();
+        if (mailId > 0) {
+            fetch(`/api/mail/${mailId}/read`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_read: true })
+            }).catch(() => {});
+        }
+
+        // 显示模态框
+        modal.classList.add('show');
+    }
+
+    // 关闭邮件详情模态框
+    function closeEmailModal() {
+        const modal = document.getElementById('emailModal');
+        modal.classList.remove('show');
+    }
+
+    // 回复邮件
+    function replyEmail() {
+        showNotification('回复功能正在开发中...', 'info');
+    }
+
+    // 删除邮件
+    function deleteEmail() {
+        if (confirm('确定要删除这封邮件吗？')) {
+            showNotification('邮件已删除', 'success');
+            closeEmailModal();
+            // 实际应用中需要从DOM中移除邮件项
+        }
+    }
+
+    // 更新统计数字
+    function updateStats() {
+        const allEmails = document.querySelectorAll('.email-item');
+        const unreadEmails = document.querySelectorAll('.email-item.unread');
+
+        document.getElementById('totalCount').textContent = allEmails.length;
+        document.getElementById('unreadCount').textContent = unreadEmails.length;
+        document.getElementById('securityCount').textContent = 0;
+    }
+
+
+
+    // 通知系统
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(notification);
+
+        // 3秒后自动关闭
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    document.getElementById('emailModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeEmailModal();
+        }
+    });
+    let maxId = 0;
+    function initPolling() {
+        maxId = 0;
+        document.querySelectorAll('.email-item').forEach(item => {
+            const id = parseInt(item.getAttribute('data-id')) || 0;
+            if (id > maxId) maxId = id;
+        });
+        setInterval(checkNewMails, 10000);
+    }
+    function checkNewMails() {
+        fetch(`/api/mails?since_id=${maxId}`)
+            .then(r => r.json())
+            .then(list => {
+                if (Array.isArray(list) && list.length > 0) {
+                    const emailList = document.getElementById('emailList');
+                    let newMax = maxId;
+                    list.forEach(mail => {
+                        const item = createEmailItem(mail);
+                        emailList.insertBefore(item, emailList.firstChild);
+                        if (mail.id > newMax) newMax = mail.id;
+                    });
+                    maxId = newMax;
+                    updateStats();
+                    showNotification(`有新邮件 ${list.length} 封，已自动加载`, 'success');
+                }
+            })
+            .catch(() => {});
+    }
+    function createEmailItem(mail) {
+        const div = document.createElement('div');
+        div.className = 'email-item' + (mail.is_read ? '' : ' unread');
+        div.setAttribute('data-id', mail.id);
+        div.setAttribute('data-time', mail.created_at);
+        const preview = mail.content.length > 120 ? mail.content.slice(0, 120) + '...' : mail.content;
+        const timeText = mail.created_at.slice(0, 16);
+        div.innerHTML = `
+            <div class="email-header">
+                <div class="email-sender">${mail.sender}</div>
+                <div class="email-time">${timeText}</div>
+            </div>
+            <div class="email-subject">${mail.subject}</div>
+            <div class="email-preview">${preview}</div>
+            <div class="email-content-hidden" style="display:none;">${mail.content}</div>
+        `;
+        div.addEventListener('click', function() { showEmailModal(div); });
+        return div;
+    }
+</script>
+{% endblock %}

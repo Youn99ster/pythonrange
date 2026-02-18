@@ -1,0 +1,289 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}商品管理 - HackShop{% endblock %}
+{% block page_title %}商品管理{% endblock %}
+
+{% block content %}
+<div id="products-content" class="page-content">
+    <div class="table-container fade-in">
+        <div class="table-header">
+            <h3 class="table-title">商品管理</h3>
+            <div class="table-actions d-flex flex-wrap gap-2">
+                <form class="d-flex gap-2" method="GET" action="{{ url_for('admin.products') }}">
+                    <input type="text" name="keyword" value="{{ keyword or '' }}" class="form-control form-control-sm" style="width:220px" placeholder="搜索商品/分类">
+                    <select name="status" class="form-select form-select-sm" style="width:120px">
+                        <option value="" {% if not status %}selected{% endif %}>全部状态</option>
+                        <option value="0" {% if status == '0' %}selected{% endif %}>上架</option>
+                        <option value="1" {% if status == '1' %}selected{% endif %}>下架</option>
+                    </select>
+                    <button class="btn btn-outline-secondary btn-sm" type="submit"><i class="fas fa-search"></i></button>
+                </form>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                    <i class="fas fa-plus me-1"></i>添加商品
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#batchImportModal">
+                    <i class="fas fa-file-import me-1"></i>批量导入
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>图片</th>
+                        <th>名称</th>
+                        <th>分类</th>
+                        <th>价格</th>
+                        <th>库存</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if goods %}
+                        {% for item in goods %}
+                        <tr>
+                            <td><img src="{{ item.mainimg }}" alt="商品图片" class="rounded" style="width:40px;height:40px;object-fit:cover;"></td>
+                            <td>{{ item.goodsname }}</td>
+                            <td>{{ item.category }}</td>
+                            <td>¥{{ item.price }}</td>
+                            <td>{{ item.stock }}</td>
+                            <td>
+                                {% if item.status == '0' %}
+                                <span class="status-badge active">上架</span>
+                                {% else %}
+                                <span class="status-badge inactive">下架</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="action-buttons d-flex gap-1">
+                                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProductModal{{ item.id }}">编辑</button>
+                                    <form action="{{ url_for('admin.product_toggle', goods_id=item.id) }}" method="POST" class="d-inline">
+                                        <button class="btn btn-outline-warning btn-sm" type="submit">{% if item.status == '0' %}下架{% else %}上架{% endif %}</button>
+                                    </form>
+                                    <form action="{{ url_for('admin.product_delete', goods_id=item.id) }}" method="POST" class="d-inline" onsubmit="return confirm('确认删除该商品吗？');">
+                                        <button class="btn btn-outline-danger btn-sm" type="submit">删除</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <div class="modal fade" id="editProductModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <form action="{{ url_for('admin.product_edit', goods_id=item.id) }}" method="POST" enctype="multipart/form-data">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">编辑商品</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">商品名称</label>
+                                                    <input type="text" class="form-control" name="goodsname" value="{{ item.goodsname }}" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">分类</label>
+                                                    <input type="text" class="form-control" name="category" value="{{ item.category }}" required>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">价格</label>
+                                                    <input type="number" step="0.01" class="form-control" name="price" value="{{ item.price }}" required>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">库存</label>
+                                                    <input type="number" class="form-control" name="stock" value="{{ item.stock }}" required>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">状态</label>
+                                                    <select class="form-select" name="status">
+                                                        <option value="0" {% if item.status == '0' %}selected{% endif %}>上架</option>
+                                                        <option value="1" {% if item.status != '0' %}selected{% endif %}>下架</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">替换主图（可选）</label>
+                                                    <input type="file" class="form-control" name="image" accept="image/*">
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">商品描述</label>
+                                                    <textarea class="form-control" name="content" rows="4">{{ item.content }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                            <button type="submit" class="btn btn-primary">保存</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">暂无商品</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="text-muted">共 {{ pagination.total }} 条记录</div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.products', page=pagination.prev_num, keyword=keyword, status=status) }}">上一页</a>
+                    </li>
+                    <li class="page-item disabled"><span class="page-link">第 {{ pagination.page }} / {{ pagination.pages }} 页</span></li>
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.products', page=pagination.next_num, keyword=keyword, status=status) }}">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ url_for('admin.product_add') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">添加商品</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">商品名称</label>
+                            <input type="text" class="form-control" name="goodsname" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">分类</label>
+                            <input type="text" class="form-control" name="category" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">价格</label>
+                            <input type="number" step="0.01" class="form-control" name="price" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">库存</label>
+                            <input type="number" class="form-control" name="stock" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">状态</label>
+                            <select class="form-select" name="status">
+                                <option value="0" selected>上架</option>
+                                <option value="1">下架</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">上传主图</label>
+                            <input type="file" class="form-control" name="image" accept="image/*">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">商品描述</label>
+                            <textarea class="form-control" name="content" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="batchImportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">批量导入商品</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <a class="btn btn-link p-0" href="{{ url_for('admin.products_batch_template') }}">下载模板</a>
+                </div>
+                <form id="batchUploadForm" action="{{ url_for('admin.products_batch_upload') }}" method="POST" enctype="multipart/form-data" class="mb-3">
+                    <div class="mb-2">
+                        <label class="form-label">上传文件</label>
+                        <input type="file" class="form-control" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary btn-sm">上传</button>
+                </form>
+                <form id="batchImportForm" action="{{ url_for('admin.products_batch_import') }}" method="POST">
+                    <div class="mb-2">
+                        <label class="form-label">文件URL</label>
+                        <input id="batchUrlDisplay" type="text" class="form-control" value="{{ batch_url or '' }}" disabled>
+                        <input id="batchUrlHidden" type="hidden" name="url" value="{{ batch_url or '' }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm" {% if not batch_url %}disabled{% endif %}>确认导入</button>
+                </form>
+                <div id="batchImportError" class="alert alert-danger d-none mt-3"></div>
+                <div class="mt-2">
+                    <label class="form-label">文件内容预览</label>
+                    <pre id="batchImportPreview" class="form-control d-none" style="max-height:220px; overflow:auto;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('batchUploadForm')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const url = form.getAttribute('action');
+  const fd = new FormData(form);
+  fetch(url, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.url) {
+        const display = document.getElementById('batchUrlDisplay');
+        const hidden = document.getElementById('batchUrlHidden');
+        const submitBtn = document.querySelector('#batchImportForm button[type="submit"]');
+        if (display) display.value = data.url;
+        if (hidden) hidden.value = data.url;
+        if (submitBtn) submitBtn.disabled = false;
+        const errBox = document.getElementById('batchImportError');
+        const previewBox = document.getElementById('batchImportPreview');
+        if (errBox) { errBox.classList.add('d-none'); errBox.textContent = ''; }
+        if (previewBox) { previewBox.classList.add('d-none'); previewBox.textContent = ''; }
+      }
+    })
+    .catch(() => {});
+});
+
+document.getElementById('batchImportForm')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const url = form.getAttribute('action');
+  const fd = new FormData(form);
+  fetch(url, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(async r => {
+      const data = await r.json();
+      if (r.ok && data && data.success) {
+        window.location.href = "{{ url_for('admin.products') }}";
+      } else {
+        const errBox = document.getElementById('batchImportError');
+        const previewBox = document.getElementById('batchImportPreview');
+        if (errBox) { errBox.textContent = (data && data.error) ? data.error : '导入失败'; errBox.classList.remove('d-none'); }
+        if (previewBox) {
+          const txt = (data && data.preview) ? data.preview : '';
+          previewBox.textContent = txt;
+          previewBox.classList.toggle('d-none', !txt);
+        }
+      }
+    })
+    .catch(() => {});
+});
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}系统错误 - HackShop{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <h3 class="mb-2">500 - 系统错误</h3>
+    <p class="text-muted">服务器遇到错误。请查看 web 容器日志定位。</p>
+    <div class="alert alert-warning">
+      <div><strong>request_id：</strong><code>{{ request_id }}</code></div>
+      <div class="mt-2"><code>docker compose logs --tail=200 web</code></div>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">回到首页</a>
+  </div>
+</div>
+{% endblock %}

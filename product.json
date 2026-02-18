@@ -1,0 +1,202 @@
+[
+  {
+    "goodsname": "iPhone 14 Pro 256GB 深空黑色",
+    "category": "手机数码",
+    "mainimg": "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=200&fit=crop",
+    "content": "苹果最新旗舰手机，搭载A16仿生芯片，4800万像素主摄系统",
+    "stock": 100,
+    "price": 8999,
+    "status": "0",
+    "slug": "iphone-14-pro-256gb-black",
+    "brand": "Apple",
+    "model": "iPhone 14 Pro 256GB",
+    "original_price": 9999,
+    "rating_avg": 4.5,
+    "rating_count": 3200,
+    "sales_count": 15234,
+    "images": [
+      { "url": "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&h=600&fit=crop", "is_main": true, "sort_order": 0 },
+      { "url": "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=80&h=80&fit=crop", "is_main": false, "sort_order": 1 }
+    ],
+    "specs": [
+      { "name": "品牌", "value": "苹果 (Apple)", "sort_order": 0 },
+      { "name": "型号", "value": "iPhone 14 Pro 256GB", "sort_order": 1 },
+      { "name": "颜色", "value": "深空黑色", "sort_order": 2 }
+    ]
+  },
+  {
+    "goodsname": "MacBook Pro 14英寸 M3芯片",
+    "category": "电脑办公",
+    "mainimg": "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=400&h=200&fit=crop",
+    "content": "Apple M3芯片，14核GPU，16GB统一内存，512GB SSD",
+    "stock": 100,
+    "price": 14999,
+    "status": "0",
+    "slug": "macbook-pro-14-m3",
+    "brand": "Apple",
+    "model": "MacBook Pro 14 (M3)",
+    "original_price": 16999,
+    "rating_avg": 4.8,
+    "rating_count": 2100,
+    "sales_count": 8456,
+    "images": [
+      { "url": "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=600&h=600&fit=crop", "is_main": true, "sort_order": 0 },
+      { "url": "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=80&h=80&fit=crop", "is_main": false, "sort_order": 1 }
+    ],
+    "specs": [
+      { "name": "品牌", "value": "苹果 (Apple)", "sort_order": 0 },
+      { "name": "型号", "value": "MacBook Pro 14（M3）", "sort_order": 1 },
+      { "name": "存储", "value": "16GB 统一内存 / 512GB SSD", "sort_order": 2 }
+    ]
+  },
+  {
+    "goodsname": "AirPods Pro 2代 主动降噪",
+    "category": "手机数码",
+    "mainimg": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&h=200&fit=crop",
+    "content": "主动降噪，自适应透明模式，空间音频，MagSafe充电盒",
+    "stock": 100,
+    "price": 1899,
+    "status": "0",
+    "slug": "airpods-pro-2-anc",
+    "brand": "Apple",
+    "model": "AirPods Pro 2",
+    "original_price": 1999,
+    "rating_avg": 4.6,
+    "rating_count": 5400,
+    "sales_count": 23156,
+    "images": [
+      { "url": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600&h=600&fit=crop", "is_main": true, "sort_order": 0 },
+      { "url": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=80&h=80&fit=crop", "is_main": false, "sort_order": 1 }
+    ],
+    "specs": [
+      { "name": "品牌", "value": "苹果 (Apple)", "sort_order": 0 },
+      { "name": "型号", "value": "AirPods Pro 2", "sort_order": 1 },
+      { "name": "特性", "value": "主动降噪 / 空间音频", "sort_order": 2 }
+    ]
+  },
+  {
+    "goodsname": "iPad Air 5代 10.9英寸",
+    "category": "影音娱乐",
+    "mainimg": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=400&h=200&fit=crop",
+    "content": "M1芯片，10.9英寸Liquid视网膜显示屏，64GB存储空间",
+    "stock": 100,
+    "price": 4399,
+    "status": "0",
+    "slug": "ipad-air-5-109",
+    "brand": "Apple",
+    "model": "iPad Air (5th Gen)",
+    "original_price": 4599,
+    "rating_avg": 4.7,
+    "rating_count": 3200,
+    "sales_count": 12890,
+    "images": [
+      { "url": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&h=600&fit=crop", "is_main": true, "sort_order": 0 },
+      { "url": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=80&h=80&fit=crop", "is_main": false, "sort_order": 1 }
+    ],
+    "specs": [
+      { "name": "品牌", "value": "苹果 (Apple)", "sort_order": 0 },
+      { "name": "型号", "value": "iPad Air (第五代)", "sort_order": 1 },
+      { "name": "屏幕", "value": "10.9英寸 Liquid 视网膜", "sort_order": 2 }
+    ]
+  },
+  {
+    "goodsname": "Apple Watch Series 8 GPS",
+    "category": "手机数码",
+    "mainimg": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=200&fit=crop",
+    "content": "健康监测，运动追踪， crash检测，IP6X防水等级",
+    "stock": 100,
+    "price": 2999,
+    "status": "0",
+    "slug": "apple-watch-series-8-gps",
+    "brand": "Apple",
+    "model": "Watch Series 8 GPS",
+    "original_price": 3199,
+    "rating_avg": 4.4,
+    "rating_count": 4100,
+    "sales_count": 18723,
+    "images": [
+      { "url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=600&fit=crop", "is_main": true, "sort_order": 0 },
+      { "url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=80&h=80&fit=crop", "is_main": false, "sort_order": 1 }
+    ],
+    "specs": [
+      { "name": "品牌", "value": "苹果 (Apple)", "sort_order": 0 },
+      { "name": "型号", "value": "Apple Watch Series 8", "sort_order": 1 },
+      { "name": "功能", "value": "健康监测 / 运动追踪 / 防水", "sort_order": 2 }
+    ]
+  },
+  {
+    "goodsname": "Samsung Galaxy S23 Ultra",
+    "category": "手机数码",
+    "mainimg": "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=200&fit=crop",
+    "content": "2亿像素主摄，S Pen手写笔，5000mAh大电池，8GB+256GB",
+    "stock": 100,
+    "price": 6999,
+    "status": "0",
+    "slug": "galaxy-s23-ultra-256",
+    "brand": "Samsung",
+    "model": "Galaxy S23 Ultra",
+    "original_price": 7399,
+    "rating_avg": 4.3,
+    "rating_count": 1800,
+    "sales_count": 9345,
+    "images": [
+      { "url": "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&h=600&fit=crop", "is_main": true, "sort_order": 0 },
+      { "url": "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=80&h=80&fit=crop", "is_main": false, "sort_order": 1 }
+    ],
+    "specs": [
+      { "name": "品牌", "value": "三星 (Samsung)", "sort_order": 0 },
+      { "name": "型号", "value": "Galaxy S23 Ultra", "sort_order": 1 },
+      { "name": "内存", "value": "8GB + 256GB", "sort_order": 2 }
+    ]
+  },
+  {
+    "goodsname": "Sony WH-1000XM5 降噪耳机",
+    "category": "影音娱乐",
+    "mainimg": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=200&fit=crop",
+    "content": "业界领先降噪技术，30小时续航，Hi-Res音质认证",
+    "stock": 100,
+    "price": 1299,
+    "status": "0",
+    "slug": "sony-wh-1000xm5",
+    "brand": "Sony",
+    "model": "WH-1000XM5",
+    "original_price": 1499,
+    "rating_avg": 4.5,
+    "rating_count": 2600,
+    "sales_count": 15678,
+    "images": [
+      { "url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop", "is_main": true, "sort_order": 0 },
+      { "url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=80&h=80&fit=crop", "is_main": false, "sort_order": 1 }
+    ],
+    "specs": [
+      { "name": "品牌", "value": "索尼 (Sony)", "sort_order": 0 },
+      { "name": "型号", "value": "WH-1000XM5", "sort_order": 1 },
+      { "name": "续航", "value": "约30小时", "sort_order": 2 }
+    ]
+  },
+  {
+    "goodsname": "Nintendo Switch OLED游戏机",
+    "category": "影音娱乐",
+    "mainimg": "https://cdn.pixabay.com/photo/2019/01/24/23/54/nintendo-switch-3953601_1280.jpg",
+    "content": "7英寸OLED屏幕，增强音频，64GB内置存储，TV模式",
+    "stock": 100,
+    "price": 2099,
+    "status": "0",
+    "slug": "nintendo-switch-oled",
+    "brand": "Nintendo",
+    "model": "Switch OLED",
+    "original_price": 2299,
+    "rating_avg": 4.8,
+    "rating_count": 5200,
+    "sales_count": 21987,
+    "images": [
+      { "url": "https://cdn.pixabay.com/photo/2019/01/24/23/54/nintendo-switch-3953601_1280.jpg", "is_main": true, "sort_order": 0 },
+      { "url": "https://cdn.pixabay.com/photo/2019/01/24/23/54/nintendo-switch-3953601_1280.jpg", "is_main": false, "sort_order": 1 }
+    ],
+    "specs": [
+      { "name": "品牌", "value": "任天堂 (Nintendo)", "sort_order": 0 },
+      { "name": "型号", "value": "Switch OLED", "sort_order": 1 },
+      { "name": "屏幕", "value": "7英寸 OLED", "sort_order": 2 }
+    ]
+  }
+]
