@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录 - HackShop</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* 重置样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 基础变量 */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --success-color: #27ae60;
+            --info-color: #3498db;
+            --warning-color: #f39c12;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --gray-color: #7f8c8d;
+            --white-color: #ffffff;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-xxl: 48px;
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 16px;
+            --box-shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --box-shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+            --box-shadow-lg: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        /* 全局样式 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background-color: var(--white-color) !important;
+            box-shadow: var(--box-shadow-sm);
+            padding: 0;
+            margin-bottom: 0;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-nav {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--dark-color) !important;
+            font-weight: 500;
+            padding: 0.75rem 1rem !important;
+            transition: color 0.3s ease;
+            text-decoration: none;
+            display: block;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        .navbar-nav .nav-link.active {
+            color: var(--primary-color) !important;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .cart-icon {
+            position: relative;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 语言切换组件 */
+        .language-switcher {
+            position: relative;
+            margin-right: 1rem;
+        }
+
+        .language-btn {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-md);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .language-btn:hover {
+            border-color: var(--primary-color);
+            background-color: var(--light-color);
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--box-shadow-md);
+            z-index: 1000;
+            min-width: 150px;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .language-dropdown.show {
+            display: block;
+        }
+
+        .language-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .language-option:hover {
+            background-color: var(--light-color);
+        }
+
+        .language-option.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            min-height: calc(100vh - 200px);
+            padding: 3rem 0;
+        }
+
+        /* 搜索框样式 */
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            width: 250px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.1);
+        }
+
+        .search-box button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* 认证页面容器 */
+        .auth-container {
+            background: var(--white-color);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--box-shadow-lg);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+
+        /* 认证头部 */
+        .auth-header {
+            background: var(--primary-color);
+            color: var(--white-color);
+            padding: var(--spacing-xl);
+            text-align: center;
+        }
+
+        .auth-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .auth-header p {
+            margin: var(--spacing-sm) 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        /* 认证内容 */
+        .auth-content {
+            padding: var(--spacing-xl);
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--light-color);
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+        }
+
+        .form-control.is-invalid {
+            border-color: var(--secondary-color);
+        }
+
+        .invalid-feedback {
+            color: var(--secondary-color);
+            font-size: 0.875rem;
+            margin-top: var(--spacing-xs);
+        }
+
+        /* 按钮样式 */
+        .btn-auth {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: none;
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background: #34495e;
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow-md);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: var(--white-color);
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow-md);
+        }
+
+        /* 分割线 */
+        .divider {
+            text-align: center;
+            margin: var(--spacing-lg) 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--light-color);
+        }
+
+        .divider span {
+            background: var(--white-color);
+            padding: 0 var(--spacing-md);
+            color: var(--gray-color);
+            font-size: 0.9rem;
+        }
+
+        /* 社交登录 */
+        .social-login {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: var(--spacing-md);
+            border: 2px solid var(--light-color);
+            border-radius: var(--border-radius-md);
+            background: var(--white-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            font-size: 0.9rem;
+            color: var(--dark-color);
+            text-decoration: none;
+        }
+
+        .social-btn:hover {
+            border-color: var(--primary-color);
+            background: rgba(44, 62, 80, 0.05);
+        }
+
+        /* 链接样式 */
+        .auth-links {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+        }
+
+        .auth-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .auth-links a:hover {
+            color: #34495e;
+            text-decoration: underline;
+        }
+
+        /* 提示消息 */
+        .alert {
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-md);
+            margin-bottom: var(--spacing-lg);
+            border: none;
+        }
+
+        .alert-success {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+        }
+
+        .alert-danger {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--secondary-color);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .auth-container {
+                margin: var(--spacing-md);
+                max-width: 100%;
+            }
+
+            .auth-header {
+                padding: var(--spacing-lg);
+            }
+
+            .auth-content {
+                padding: var(--spacing-lg);
+            }
+
+            .social-login {
+                flex-direction: column;
+            }
+
+            .navbar-nav .nav-link {
+                padding: 0.5rem 0.75rem !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 1rem 0;
+            }
+
+            .auth-container {
+                margin: var(--spacing-sm);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <!-- Logo和网站名称 -->
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag me-2"></i>HackShop
+            </a>
+
+            <!-- 移动端菜单按钮 -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- 导航菜单 -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-th-large me-1"></i>商品分类
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-tags me-1"></i>优惠活动
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-headset me-1"></i>客服中心
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- 搜索框 -->
+                <div class="search-box me-3">
+                    <input type="text" placeholder="搜索商品..." id="searchInput">
+                    <button type="button" onclick="performSearch()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <!-- 用户操作区域 -->
+                <div class="d-flex align-items-center gap-3">
+                    <!-- 语言切换组件 -->
+                    <div class="language-switcher">
+                        <button class="language-btn" onclick="toggleLanguageDropdown()">
+                            <i class="fas fa-globe"></i>
+                            <span id="current-lang">中文</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="language-dropdown" id="language-dropdown">
+                            <div class="language-option active" onclick="changeLanguage('zh')">
+                                <i class="fas fa-flag"></i>
+                                <span>中文</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('en')">
+                                <i class="fas fa-flag"></i>
+                                <span>English</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('ru')">
+                                <i class="fas fa-flag"></i>
+                                <span>Русский</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-badge">0</span>
+                    </a>
+                    <a href="login.html" class="btn btn-outline-primary btn-sm active">登录</a>
+                    <a href="register.html" class="btn btn-primary btn-sm">注册</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="main-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-8 col-sm-10">
+                    <div class="auth-container">
+                        <div class="auth-header">
+                            <h1><i class="fas fa-sign-in-alt"></i> 用户登录</h1>
+                            <p>登录以享受完整购物体验</p>
+                        </div>
+
+                        <div class="auth-content">
+                            <!-- 提示消息 -->
+                            <div id="alert-container"></div>
+
+                            <!-- 登录表单 -->
+                            <form id="login-form">
+                                <div class="form-group">
+                                    <label class="form-label" for="login-email">邮箱地址</label>
+                                    <input type="email" id="login-email" class="form-control" required>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="login-password">密码</label>
+                                    <input type="password" id="login-password" class="form-control" required>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input type="checkbox" id="remember-me" class="form-check-input">
+                                        <label class="form-check-label" for="remember-me">记住我</label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-auth btn-primary">
+                                    <i class="fas fa-sign-in-alt"></i> 登录
+                                </button>
+
+                                <div class="auth-links">
+                                    <a href="forgot-password.html">忘记密码？</a>
+                                </div>
+                            </form>
+
+                            <!-- 分割线 -->
+                            <div class="divider">
+                                <span>或</span>
+                            </div>
+
+                            <!-- 社交登录 -->
+                            <div class="social-login">
+                                <a href="#" class="social-btn" onclick="socialLogin('wechat')">
+                                    <i class="fab fa-weixin"></i>
+                                    微信
+                                </a>
+                                <a href="#" class="social-btn" onclick="socialLogin('qq')">
+                                    <i class="fab fa-qq"></i>
+                                    QQ
+                                </a>
+                                <a href="#" class="social-btn" onclick="socialLogin('weibo')">
+                                    <i class="fab fa-weibo"></i>
+                                    微博
+                                </a>
+                            </div>
+
+                            <!-- 返回首页 -->
+                            <div class="auth-links">
+                                <a href="index.html">
+                                    <i class="fas fa-arrow-left"></i> 返回首页
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // 语言切换功能
+        function toggleLanguageDropdown() {
+            const dropdown = document.getElementById('language-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function changeLanguage(lang) {
+            const currentLang = document.getElementById('current-lang');
+            const langNames = {
+                'zh': '中文',
+                'en': 'English',
+                'ru': 'Русский'
+            };
+
+            currentLang.textContent = langNames[lang];
+
+            // 更新活跃状态
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.closest('.language-option').classList.add('active');
+
+            // 关闭下拉菜单
+            document.getElementById('language-dropdown').classList.remove('show');
+
+            // 这里可以添加实际的语言切换逻辑
+            console.log('语言已切换至:', lang);
+        }
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', function(event) {
+            const languageSwitcher = document.querySelector('.language-switcher');
+            const dropdown = document.getElementById('language-dropdown');
+
+            if (languageSwitcher && !languageSwitcher.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Mock 用户数据
+        const mockUsers = [
+            {
+                id: 1,
+                username: 'admin',
+                email: 'admin@hackshop.com',
+                password: 'admin123',
+                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+                phone: '13800138000',
+                address: '北京市朝阳区某某街道123号',
+                registerTime: '2024-01-01 10:00:00',
+                lastLogin: '2024-09-28 15:30:00'
+            },
+            {
+                id: 2,
+                username: 'testuser',
+                email: 'test@example.com',
+                password: 'test123',
+                avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+                phone: '13900139000',
+                address: '上海市浦东新区某某路456号',
+                registerTime: '2024-02-15 14:20:00',
+                lastLogin: '2024-09-27 09:15:00'
+            },
+            {
+                id: 3,
+                username: 'hacker',
+                email: 'hacker@test.com',
+                password: 'hacker123',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+                phone: '13700137000',
+                address: '广州市天河区某某大道789号',
+                registerTime: '2024-03-20 16:45:00',
+                lastLogin: '2024-09-26 20:10:00'
+            }
+        ];
+
+        // 当前登录用户
+        let currentUser = null;
+
+        // 显示提示消息
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        // 验证邮箱格式
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // 显示字段错误
+        function showFieldError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const feedback = field.nextElementSibling;
+            field.classList.add('is-invalid');
+            feedback.textContent = message;
+        }
+
+        // 清除字段错误
+        function clearFieldError(fieldId) {
+            const field = document.getElementById(fieldId);
+            const feedback = field.nextElementSibling;
+            field.classList.remove('is-invalid');
+            feedback.textContent = '';
+        }
+
+        // 搜索功能
+        function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim();
+            if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        // 登录表单提交
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 清除之前的错误
+            clearFieldError('login-email');
+            clearFieldError('login-password');
+
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            // 验证输入
+            if (!email) {
+                showFieldError('login-email', '请输入邮箱地址');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showFieldError('login-email', '请输入有效的邮箱地址');
+                return;
+            }
+
+            if (!password) {
+                showFieldError('login-password', '请输入密码');
+                return;
+            }
+
+            // 查找用户
+            const user = mockUsers.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                // 登录成功
+                currentUser = user;
+                showAlert('登录成功！正在跳转到用户中心...', 'success');
+
+                // 模拟跳转延迟
+                setTimeout(() => {
+                    // 在实际应用中，这里会跳转到用户中心
+                    console.log('登录成功，用户信息：', user);
+                    showAlert('登录成功！欢迎回来，' + user.username, 'success');
+                }, 1000);
+            } else {
+                // 登录失败
+                showAlert('邮箱或密码错误，请重试', 'danger');
+            }
+        });
+
+        // 社交登录
+        function socialLogin(platform) {
+            showAlert(`${platform === 'wechat' ? '微信' : platform === 'qq' ? 'QQ' : '微博'}登录功能暂未开放`, 'info');
+        }
+
+        // 清除输入字段错误状态
+        document.querySelectorAll('.form-control').forEach(field => {
+            field.addEventListener('input', function() {
+                this.classList.remove('is-invalid');
+                const feedback = this.nextElementSibling;
+                if (feedback && feedback.classList.contains('invalid-feedback')) {
+                    feedback.textContent = '';
+                }
+            });
+        });
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('HackShop 登录页面加载完成');
+            console.log('Mock用户数据：', mockUsers);
+        });
+    </script>
+</body>
+</html>

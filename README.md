@@ -1,10 +1,10 @@
-﻿# HackShop
+# pythonrange
 
-HackShop 是一个以仿真电商业务为核心的 Web 安全教学靶场。
+pythonrange ��һ���Է������ҵ��Ϊ���ĵ� Web ��ȫ��ѧ�г���
 
-项目目标不是“漏洞题列表”，而是在真实业务流（注册、下单、支付、后台管理）中完成漏洞发现与利用。
+��ĿĿ�겻�ǡ�©�����б�������������ʵҵ������ע�ᡢ�µ���֧������̨�����������©�����������á�
 
-## 技术栈
+## ����ջ
 - Backend: Flask + SQLAlchemy + Flask-Migrate
 - Database: MySQL 8.0
 - Cache: Redis 6
@@ -12,14 +12,14 @@ HackShop 是一个以仿真电商业务为核心的 Web 安全教学靶场。
 - Runtime: Gunicorn
 - Deployment: Docker Compose
 
-## 核心模块
-- 用户认证：注册、登录、找回密码、重置密码
-- 商城流程：商品浏览、购物车、下单、支付、订单详情
-- 用户中心：地址管理、余额、储值券兑换
-- 管理后台：商品/订单/用户/储值券管理、批量导入
-- 仿真工具：模拟收件箱、初始化页面 `/setup`
+## ����ģ��
+- �û���֤��ע�ᡢ��¼���һ����롢��������
+- �̳����̣���Ʒ��������ﳵ���µ���֧������������
+- �û����ģ���ַ����������ֵȯ�һ�
+- ������̨����Ʒ/����/�û�/��ֵȯ��������������
+- ���湤�ߣ�ģ���ռ��䡢��ʼ��ҳ�� `/setup`
 
-## 漏洞场景（10个）
+## ©��������10����
 - V-Auth-DoS
 - V-Host-Inject
 - V-CSRF-Pay
@@ -31,65 +31,65 @@ HackShop 是一个以仿真电商业务为核心的 Web 安全教学靶场。
 - V-SSTI
 - V-Admin-AES
 
-## 使用方式（Docker Only）
+## ʹ�÷�ʽ��Docker Only��
 
-### 1. 启动（推荐完整重置）
+### 1. �������Ƽ��������ã�
 ```bash
 docker compose down -v
 docker compose up -d --build
 ```
 
-### 2. 检查状态
+### 2. ���״̬
 ```bash
 docker compose ps
 docker compose logs -f web
 ```
 
-### 3. 访问入口
-- 前台首页：`http://127.0.0.1:8000/`
-- 初始化：`http://127.0.0.1:8000/setup`
-- 后台登录：`http://127.0.0.1:8000/admin/login`
+### 3. �������
+- ǰ̨��ҳ��`http://127.0.0.1:8000/`
+- ��ʼ����`http://127.0.0.1:8000/setup`
+- ��̨��¼��`http://127.0.0.1:8000/admin/login`
 
-### 4. 初始化数据
-首次启动访问 `/setup`：
-- 创建/更新管理员账号
-- 导入 `product.json` 商品数据
+### 4. ��ʼ������
+�״��������� `/setup`��
+- ����/���¹���Ա�˺�
+- ���� `product.json` ��Ʒ����
 
-## 容器内维护命令
+## ������ά������
 
-### 1. 重置实验环境（清库 + 重新种子）
+### 1. ����ʵ�黷������� + �������ӣ�
 ```bash
 docker compose exec web python scripts/reset_lab.py
 ```
 
-### 2. 仅执行种子数据
+### 2. ��ִ����������
 ```bash
 docker compose exec web python scripts/seed.py
 ```
 
-### 3. 查看 Flask 路由
+### 3. �鿴 Flask ·��
 ```bash
 docker compose exec web flask --app app routes
 ```
 
-### 4. 手动执行迁移
+### 4. �ֶ�ִ��Ǩ��
 ```bash
 docker compose exec web flask --app app db upgrade
 ```
 
-### 5. 容器启动自动执行（可选）
-在 `docker-compose.yml` 的 `web.environment` 添加：
+### 5. ���������Զ�ִ�У���ѡ��
+�� `docker-compose.yml` �� `web.environment` ���ӣ�
 - `SEED_ON_BOOT=1`
 - `RESET_LAB_ON_BOOT=1`
 
-## 项目结构（核心）
+## ��Ŀ�ṹ�����ģ�
 ```text
 app/
   controller/      # main/auth/order/user/admin
-  models/          # SQLAlchemy 数据模型
-  template/        # Jinja2 页面
-  static/          # 静态资源
-  utils/           # Redis、工具函数、日志配置
+  models/          # SQLAlchemy ����ģ��
+  template/        # Jinja2 ҳ��
+  static/          # ��̬��Դ
+  utils/           # Redis�����ߺ�������־����
 scripts/
   seed.py
   reset_lab.py
@@ -102,6 +102,7 @@ docker-compose.yml
 Dockerfile
 ```
 
-## 注意事项
-- 本项目包含“有意设计”的漏洞，仅用于授权教学与研究环境。
-- 当前默认配置面向开发/教学，不是生产安全基线。
+## ע������
+- ����Ŀ������������ơ���©������������Ȩ��ѧ���о�������
+- ��ǰĬ���������򿪷�/��ѧ������������ȫ���ߡ�
+

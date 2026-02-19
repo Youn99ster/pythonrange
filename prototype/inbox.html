@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackShop - 模拟收件箱</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* 重置样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 基础变量 */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --success-color: #27ae60;
+            --info-color: #3498db;
+            --warning-color: #f39c12;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --gray-color: #7f8c8d;
+            --white-color: #ffffff;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-xxl: 48px;
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 16px;
+            --box-shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --box-shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+            --box-shadow-lg: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        /* 全局样式 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background-color: var(--white-color) !important;
+            box-shadow: var(--box-shadow-sm);
+            padding: 0;
+            margin-bottom: 0;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-nav {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--dark-color) !important;
+            font-weight: 500;
+            padding: 0.75rem 1rem !important;
+            transition: color 0.3s ease;
+            text-decoration: none;
+            display: block;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        .navbar-nav .nav-link.active {
+            color: var(--primary-color) !important;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .cart-icon {
+            position: relative;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 语言切换组件 */
+        .language-switcher {
+            position: relative;
+            margin-right: 1rem;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--light-color);
+            transition: border-color 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            border-color: var(--primary-color);
+        }
+
+        .language-btn {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-md);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .language-btn:hover {
+            border-color: var(--primary-color);
+            background-color: var(--light-color);
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--box-shadow-md);
+            z-index: 1000;
+            min-width: 150px;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .language-dropdown.show {
+            display: block;
+        }
+
+        .language-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .language-option:hover {
+            background-color: var(--light-color);
+        }
+
+        .language-option.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* 用户下拉菜单 */
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--box-shadow-md);
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-info {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .user-email {
+            font-size: 0.875rem;
+            color: var(--gray-color);
+        }
+
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            clear: both;
+            font-weight: 400;
+            color: var(--dark-color);
+            text-decoration: none;
+            background-color: transparent;
+            border: 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--light-color);
+            color: var(--primary-color);
+        }
+
+        .dropdown-divider {
+            height: 0;
+            margin: 0.5rem 0;
+            overflow: hidden;
+            border-top: 1px solid #eee;
+        }
+
+        /* Bootstrap dropdown-item 兼容性 */
+        .dropdown-item i {
+            margin-right: 0.5rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            width: 250px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.1);
+        }
+
+        .search-box button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            min-height: calc(100vh - 200px);
+            padding: 2rem 0;
+        }
+
+        /* 收件箱样式 */
+        .inbox-container {
+            background-color: var(--white-color);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--box-shadow-sm);
+            overflow: hidden;
+        }
+
+        .inbox-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: var(--spacing-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inbox-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .inbox-stats {
+            display: flex;
+            gap: var(--spacing-xl);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* 邮件分类标签 */
+        .email-categories {
+            display: flex;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background-color: var(--light-color);
+            border-bottom: 1px solid #ddd;
+        }
+
+        .category-tag {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background-color: var(--white-color);
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .category-tag:hover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .category-tag.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 搜索和筛选区域 */
+        .inbox-controls {
+            padding: var(--spacing-md);
+            background-color: var(--white-color);
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .search-input-group {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-input-group input {
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-md);
+            padding: 0.5rem 1rem;
+            width: 100%;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            background-color: var(--white-color);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* 邮件列表 */
+        .email-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .email-item {
+            border-bottom: 1px solid #eee;
+            padding: var(--spacing-md);
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .email-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .email-item.unread {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--info-color);
+        }
+
+        .email-item.suspicious {
+            background-color: #fff3e0;
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .email-item.dangerous {
+            background-color: #ffebee;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .email-sender {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .email-time {
+            font-size: 0.8rem;
+            color: var(--gray-color);
+        }
+
+        .email-subject {
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            color: var(--dark-color);
+        }
+
+        .email-preview {
+            font-size: 0.9rem;
+            color: var(--gray-color);
+            line-height: 1.4;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .email-tags {
+            display: flex;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+        }
+
+        .email-tag {
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .email-tag.system {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .email-tag.password {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .email-tag.order {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .email-tag.security {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
+        /* 邮件详情模态框 */
+        .email-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .email-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .email-modal-content {
+            background-color: white;
+            border-radius: var(--border-radius-lg);
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--box-shadow-lg);
+        }
+
+        .email-modal-header {
+            padding: var(--spacing-xl);
+            border-bottom: 1px solid #ddd;
+            background-color: var(--light-color);
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+        }
+
+        .email-modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .email-modal-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+
+        .email-modal-body {
+            padding: var(--spacing-xl);
+        }
+
+        .email-content {
+            line-height: 1.6;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .security-warning {
+            background-color: #fff3e0;
+            border: 1px solid var(--warning-color);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+        }
+
+        .security-warning.danger {
+            background-color: #ffebee;
+            border-color: var(--secondary-color);
+        }
+
+        .security-warning h5 {
+            color: var(--warning-color);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .security-warning.danger h5 {
+            color: var(--secondary-color);
+        }
+
+        .email-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: flex-end;
+            padding: var(--spacing-md);
+            border-top: 1px solid #ddd;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background-color: #34495e;
+        }
+
+        .action-btn.danger {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .action-btn.danger:hover {
+            background-color: #c0392b;
+        }
+
+        .action-btn.secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .action-btn.secondary:hover {
+            background-color: #5a6268;
+        }
+
+        /* 页脚 */
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: var(--spacing-xxl) 0;
+            margin-top: var(--spacing-xxl);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .footer-section h5 {
+            color: var(--white-color);
+            margin-bottom: var(--spacing-md);
+            font-weight: 600;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .footer-section a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--white-color);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid #34495e;
+            color: #bdc3c7;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .search-box input {
+                width: 150px;
+            }
+
+            .inbox-header {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                text-align: center;
+            }
+
+            .inbox-stats {
+                justify-content: center;
+            }
+
+            .inbox-controls {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+
+            .search-input-group {
+                max-width: 100%;
+            }
+
+            .filter-buttons {
+                justify-content: center;
+            }
+
+            .email-modal-content {
+                width: 95%;
+                max-height: 90vh;
+            }
+
+            .navbar-nav {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .navbar-nav .nav-link {
+                border-bottom: 1px solid var(--light-color);
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .pulse {
+            animation: pulse 0.3s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* 自定义滚动条 */
+        .email-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .email-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .email-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .email-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <!-- Logo和网站名称 -->
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag me-2"></i>HackShop
+            </a>
+
+            <!-- 移动端菜单按钮 -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- 导航菜单 -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-th-large me-1"></i>商品分类
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-tags me-1"></i>优惠活动
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-headset me-1"></i>客服中心
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- 搜索框 -->
+                <div class="search-box me-3">
+                    <input type="text" placeholder="搜索商品..." id="searchInput">
+                    <button type="button" onclick="performSearch()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <!-- 用户操作区域 -->
+                <div class="d-flex align-items-center gap-3">
+                    <!-- 语言切换组件 -->
+                    <div class="language-switcher">
+                        <button class="language-btn" onclick="toggleLanguageDropdown()">
+                            <i class="fas fa-globe"></i>
+                            <span id="current-lang">中文</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="language-dropdown" id="language-dropdown">
+                            <div class="language-option active" onclick="changeLanguage('zh')">
+                                <i class="fas fa-flag"></i>
+                                <span>中文</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('en')">
+                                <i class="fas fa-flag"></i>
+                                <span>English</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('ru')">
+                                <i class="fas fa-flag"></i>
+                                <span>Русский</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-badge">0</span>
+                    </a>
+                    <!-- 用户头像（已登录状态） -->
+                    <div class="user-menu">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=35&h=35&fit=crop&crop=face"
+                             alt="用户头像"
+                             class="user-avatar"
+                             onclick="toggleUserMenu()">
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="user-info">
+                                <div class="user-name">张三</div>
+                                <div class="user-email">zhangsan@example.com</div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a href="user-center.html" class="dropdown-item">
+                                <i class="fas fa-user me-2"></i>用户中心
+                            </a>
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-cog me-2"></i>账户设置
+                            </a>
+                            <a href="user-center.html" class="dropdown-item">
+                                <i class="fas fa-list-alt me-2"></i>我的订单
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>退出登录
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="main-content">
+        <div class="container">
+            <!-- 收件箱区域 -->
+            <div class="inbox-container fade-in-up">
+                <!-- 收件箱头部 -->
+                <div class="inbox-header">
+                    <h1 class="inbox-title">
+                        <i class="fas fa-inbox me-2"></i>模拟收件箱
+                    </h1>
+                    <div class="inbox-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="totalCount">12</span>
+                            <span class="stat-label">总邮件</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="unreadCount">3</span>
+                            <span class="stat-label">未读</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="securityCount">2</span>
+                            <span class="stat-label">安全警告</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 邮件分类标签 -->
+                <div class="email-categories">
+                    <div class="category-tag active" onclick="filterByCategory('all')">
+                        <i class="fas fa-envelope me-1"></i>全部邮件
+                    </div>
+                    <div class="category-tag" onclick="filterByCategory('system')">
+                        <i class="fas fa-cog me-1"></i>系统通知
+                    </div>
+                    <div class="category-tag" onclick="filterByCategory('password')">
+                        <i class="fas fa-key me-1"></i>密码重置
+                    </div>
+                    <div class="category-tag" onclick="filterByCategory('order')">
+                        <i class="fas fa-shopping-bag me-1"></i>订单通知
+                    </div>
+                    <div class="category-tag" onclick="filterByCategory('security')">
+                        <i class="fas fa-shield-alt me-1"></i>安全警报
+                    </div>
+                </div>
+
+                <!-- 搜索和筛选区域 -->
+                <div class="inbox-controls">
+                    <div class="search-input-group">
+                        <input type="text" placeholder="搜索邮件内容..." id="emailSearch" onkeyup="searchEmails()">
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn" onclick="sortEmails('time')">
+                            <i class="fas fa-clock me-1"></i>时间排序
+                        </button>
+                        <button class="filter-btn" onclick="sortEmails('sender')">
+                            <i class="fas fa-user me-1"></i>发件人排序
+                        </button>
+                        <button class="filter-btn" onclick="markAllAsRead()">
+                            <i class="fas fa-check-double me-1"></i>全部标记已读
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 邮件列表 -->
+                <div class="email-list" id="emailList">
+                    <!-- 系统通知邮件 -->
+                    <div class="email-item unread" data-category="system" data-time="2024-09-29T10:30:00">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-cog me-1"></i>HackShop系统
+                            </div>
+                            <div class="email-time">10:30</div>
+                        </div>
+                        <div class="email-subject">欢迎使用HackShop仿真商城</div>
+                        <div class="email-preview">感谢您注册HackShop！我们是一个专注于网络安全教育的仿真商城平台，在这里您可以安全地学习和实践各种网络安全技能...</div>
+                        <div class="email-tags">
+                            <span class="email-tag system">系统通知</span>
+                            <span class="email-tag security">欢迎邮件</span>
+                        </div>
+                    </div>
+
+                    <!-- 密码重置邮件 - HOST注入漏洞演示 -->
+                    <div class="email-item unread suspicious" data-category="password" data-time="2024-09-29T09:15:00" data-vulnerable="true">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-key me-1"></i>密码重置服务
+                            </div>
+                            <div class="email-time">09:15</div>
+                        </div>
+                        <div class="email-subject">密码重置请求 - 请点击链接重置密码</div>
+                        <div class="email-preview">我们收到了您的密码重置请求。请点击以下链接重置您的密码：http://hackshop.com/reset-password?token=abc123&user=test@example.com...</div>
+                        <div class="email-tags">
+                            <span class="email-tag password">密码重置</span>
+                            <span class="email-tag security">安全警告</span>
+                        </div>
+                    </div>
+
+                    <!-- 订单通知邮件 -->
+                    <div class="email-item" data-category="order" data-time="2024-09-29T08:45:00">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-shopping-bag me-1"></i>HackShop商城
+                            </div>
+                            <div class="email-time">08:45</div>
+                        </div>
+                        <div class="email-subject">订单确认：#HS2024092901</div>
+                        <div class="email-preview">您的订单已确认！订单包含：iPhone 14 Pro 256GB 深空黑色 x1，总金额：¥8,999。预计配送时间：2-3个工作日...</div>
+                        <div class="email-tags">
+                            <span class="email-tag order">订单通知</span>
+                        </div>
+                    </div>
+
+                    <!-- 恶意邮件演示 -->
+                    <div class="email-item unread dangerous" data-category="security" data-time="2024-09-29T07:20:00" data-vulnerable="true">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-exclamation-triangle me-1"></i>安全警报系统
+                            </div>
+                            <div class="email-time">07:20</div>
+                        </div>
+                        <div class="email-subject">紧急：检测到异常登录活动</div>
+                        <div class="email-preview">我们检测到您的账户有异常登录活动。请立即点击此链接验证您的身份：http://malicious-site.com/verify?redirect=hackshop.com...</div>
+                        <div class="email-tags">
+                            <span class="email-tag security">安全警报</span>
+                            <span class="email-tag security">钓鱼邮件</span>
+                        </div>
+                    </div>
+
+                    <!-- 促销邮件 -->
+                    <div class="email-item" data-category="system" data-time="2024-09-28T16:30:00">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-tags me-1"></i>HackShop促销
+                            </div>
+                            <div class="email-time">昨天 16:30</div>
+                        </div>
+                        <div class="email-subject">限时优惠：数码产品最高立减1000元！</div>
+                        <div class="email-preview">秋季大促销来袭！iPhone、MacBook、AirPods等热门数码产品限时优惠，活动截止至9月30日，快来抢购吧...</div>
+                        <div class="email-tags">
+                            <span class="email-tag system">促销活动</span>
+                        </div>
+                    </div>
+
+                    <!-- 系统维护通知 -->
+                    <div class="email-item" data-category="system" data-time="2024-09-28T14:15:00">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-tools me-1"></i>系统维护
+                            </div>
+                            <div class="email-time">昨天 14:15</div>
+                        </div>
+                        <div class="email-subject">系统维护通知</div>
+                        <div class="email-preview">为了提供更好的服务体验，我们将于2024年9月30日凌晨2:00-4:00进行系统维护，期间部分服务可能暂时无法使用...</div>
+                        <div class="email-tags">
+                            <span class="email-tag system">维护通知</span>
+                        </div>
+                    </div>
+
+                    <!-- 另一个密码重置邮件 -->
+                    <div class="email-item" data-category="password" data-time="2024-09-28T11:00:00">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-key me-1"></i>密码重置服务
+                            </div>
+                            <div class="email-time">昨天 11:00</div>
+                        </div>
+                        <div class="email-subject">密码重置成功通知</div>
+                        <div class="email-preview">您的密码已成功重置。如果这不是您本人的操作，请立即联系我们的客服团队，我们将帮助您保护账户安全...</div>
+                        <div class="email-tags">
+                            <span class="email-tag password">密码重置</span>
+                        </div>
+                    </div>
+
+                    <!-- 订单发货通知 -->
+                    <div class="email-item" data-category="order" data-time="2024-09-28T09:30:00">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-truck me-1"></i>HackShop物流
+                            </div>
+                            <div class="email-time">昨天 09:30</div>
+                        </div>
+                        <div class="email-subject">订单发货通知：#HS2024092801</div>
+                        <div class="email-preview">您的订单已发货！物流单号：SF1234567890，预计3-5个工作日送达。您可以通过我们的网站实时查询物流信息...</div>
+                        <div class="email-tags">
+                            <span class="email-tag order">发货通知</span>
+                        </div>
+                    </div>
+
+                    <!-- 账户安全提醒 -->
+                    <div class="email-item" data-category="security" data-time="2024-09-27T18:45:00">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-shield-alt me-1"></i>安全中心
+                            </div>
+                            <div class="email-time">2天前</div>
+                        </div>
+                        <div class="email-subject">账户安全提醒</div>
+                        <div class="email-preview">为了保护您的账户安全，建议您定期更换密码，并开启双重认证功能。我们为您提供了最新的安全建议...</div>
+                        <div class="email-tags">
+                            <span class="email-tag security">安全提醒</span>
+                        </div>
+                    </div>
+
+                    <!-- 评价邀请邮件 -->
+                    <div class="email-item" data-category="order" data-time="2024-09-27T15:20:00">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-star me-1"></i>HackShop评价
+                            </div>
+                            <div class="email-time">2天前</div>
+                        </div>
+                        <div class="email-subject">邀请您评价购买的商品</div>
+                        <div class="email-preview">感谢您在HackShop购买商品！我们诚挚邀请您为已购买的商品进行评价，您的评价对其他用户非常重要...</div>
+                        <div class="email-tags">
+                            <span class="email-tag order">评价邀请</span>
+                        </div>
+                    </div>
+
+                    <!-- 会员升级通知 -->
+                    <div class="email-item" data-category="system" data-time="2024-09-27T12:00:00">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-crown me-1"></i>会员中心
+                            </div>
+                            <div class="email-time">2天前</div>
+                        </div>
+                        <div class="email-subject">恭喜！您已升级为VIP会员</div>
+                        <div class="email-preview">恭喜您！由于您的消费记录，您已自动升级为VIP会员，享受更多专属优惠和服务特权...</div>
+                        <div class="email-tags">
+                            <span class="email-tag system">会员升级</span>
+                        </div>
+                    </div>
+
+                    <!-- 新品推荐邮件 -->
+                    <div class="email-item" data-category="system" data-time="2024-09-26T10:00:00">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <i class="fas fa-sparkles me-1"></i>新品推荐
+                            </div>
+                            <div class="email-time">3天前</div>
+                        </div>
+                        <div class="email-subject">新品上架：Nintendo Switch OLED游戏机</div>
+                        <div class="email-preview">最新款Nintendo Switch OLED游戏机现已上架！7英寸OLED屏幕，增强音频，64GB内置存储，快来体验吧...</div>
+                        <div class="email-tags">
+                            <span class="email-tag system">新品推荐</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 邮件详情模态框 -->
+    <div class="email-modal" id="emailModal">
+        <div class="email-modal-content">
+            <div class="email-modal-header">
+                <h3 class="email-modal-title" id="modalTitle">邮件标题</h3>
+                <div class="email-modal-meta">
+                    <span id="modalSender">发件人</span>
+                    <span id="modalTime">时间</span>
+                </div>
+            </div>
+            <div class="email-modal-body">
+                <div class="email-content" id="modalContent">
+                    邮件内容
+                </div>
+                <div class="security-warning" id="securityWarning" style="display: none;">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>安全警告</h5>
+                    <p id="securityWarningText">此邮件可能包含安全风险，请谨慎处理。</p>
+                </div>
+            </div>
+            <div class="email-actions">
+                <button class="action-btn secondary" onclick="closeEmailModal()">关闭</button>
+                <button class="action-btn primary" onclick="replyEmail()">回复</button>
+                <button class="action-btn danger" onclick="deleteEmail()">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h5>关于我们</h5>
+                    <ul>
+                        <li><a href="#">公司简介</a></li>
+                        <li><a href="#">联系我们</a></li>
+                        <li><a href="#">招聘信息</a></li>
+                        <li><a href="#">商家入驻</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>客户服务</h5>
+                    <ul>
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">售后服务</a></li>
+                        <li><a href="#">配送说明</a></li>
+                        <li><a href="#">支付方式</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>商家合作</h5>
+                    <ul>
+                        <li><a href="#">商家入驻</a></li>
+                        <li><a href="#">商家中心</a></li>
+                        <li><a href="#">运营服务</a></li>
+                        <li><a href="#">广告服务</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>关注我们</h5>
+                    <ul>
+                        <li><a href="#"><i class="fab fa-weixin"></i> 微信公众号</a></li>
+                        <li><a href="#"><i class="fab fa-weibo"></i> 新浪微博</a></li>
+                        <li><a href="#"><i class="fab fa-qq"></i> QQ群</a></li>
+                        <li><a href="#">客服热线: 400-123-4567</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 HackShop. 保留所有权利 | 京ICP备12345678号 | 京公网安备11010802012345号</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // 邮件数据
+        const emailData = {
+            'system': [
+                {
+                    sender: 'HackShop系统',
+                    subject: '欢迎使用HackShop仿真商城',
+                    preview: '感谢您注册HackShop！我们是一个专注于网络安全教育的仿真商城平台，在这里您可以安全地学习和实践各种网络安全技能...',
+                    content: `
+                        <p>尊敬的用户：</p>
+                        <p>感谢您注册HackShop仿真商城！我们是一个专注于网络安全教育的仿真商城平台。</p>
+                        <p>在HackShop，您可以：</p>
+                        <ul>
+                            <li>学习和实践各种网络安全技能</li>
+                            <li>体验真实的电商环境</li>
+                            <li>参与安全挑战和竞赛</li>
+                            <li>获得专业的安全培训</li>
+                        </ul>
+                        <p>如果您有任何问题，随时联系我们的客服团队。</p>
+                        <p>祝您使用愉快！</p>
+                        <p>HackShop团队</p>
+                    `,
+                    time: '2024-09-29T10:30:00',
+                    tags: ['system', 'welcome']
+                },
+                {
+                    sender: 'HackShop促销',
+                    subject: '限时优惠：数码产品最高立减1000元！',
+                    preview: '秋季大促销来袭！iPhone、MacBook、AirPods等热门数码产品限时优惠，活动截止至9月30日，快来抢购吧...',
+                    content: `
+                        <p>亲爱的用户：</p>
+                        <p>秋季大促销来袭！以下是本次活动的详细信息：</p>
+                        <h4>优惠商品：</h4>
+                        <ul>
+                            <li>iPhone 14 Pro：立减800元</li>
+                            <li>MacBook Pro M3：立减1000元</li>
+                            <li>AirPods Pro 2：立减300元</li>
+                            <li>Apple Watch Series 8：立减400元</li>
+                        </ul>
+                        <p><strong>活动时间：</strong>2024年9月15日 - 9月30日</p>
+                        <p><strong>优惠码：</strong>AUTUMN2024</p>
+                        <p>快来抢购吧！</p>
+                    `,
+                    time: '2024-09-28T16:30:00',
+                    tags: ['system', 'promotion']
+                }
+            ],
+            'password': [
+                {
+                    sender: '密码重置服务',
+                    subject: '密码重置请求 - 请点击链接重置密码',
+                    preview: '我们收到了您的密码重置请求。请点击以下链接重置您的密码：http://hackshop.com/reset-password?token=abc123&user=test@example.com...',
+                    content: `
+                        <p>尊敬的用户：</p>
+                        <p>我们收到了您的密码重置请求。如果这是您本人的操作，请点击以下链接重置密码：</p>
+                        <p><a href="http://hackshop.com/reset-password?token=abc123&user=test@example.com" style="color: #007bff;">http://hackshop.com/reset-password?token=abc123&user=test@example.com</a></p>
+                        <div class="security-warning">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>HOST注入漏洞演示</h5>
+                            <p>此邮件演示了HOST注入漏洞。注意链接中的参数可能被恶意修改：</p>
+                            <ul>
+                                <li><code>user=test@example.com</code> 参数可能被篡改</li>
+                                <li>攻击者可能修改为恶意邮箱地址</li>
+                                <li>系统可能会向错误的邮箱发送密码重置链接</li>
+                            </ul>
+                            <p><strong>安全建议：</strong>在实际应用中，应该验证用户输入的合法性，避免直接使用URL参数。</p>
+                        </div>
+                        <p>如果您没有请求密码重置，请忽略此邮件。</p>
+                        <p>安全团队</p>
+                    `,
+                    time: '2024-09-29T09:15:00',
+                    tags: ['password', 'security'],
+                    vulnerable: true
+                },
+                {
+                    sender: '密码重置服务',
+                    subject: '密码重置成功通知',
+                    preview: '您的密码已成功重置。如果这不是您本人的操作，请立即联系我们的客服团队，我们将帮助您保护账户安全...',
+                    content: `
+                        <p>尊敬的用户：</p>
+                        <p>您的密码已成功重置。现在您可以使用新密码登录您的账户。</p>
+                        <p>如果这不是您本人的操作，请立即：</p>
+                        <ul>
+                            <li>联系我们的客服团队</li>
+                            <li>检查您的账户活动</li>
+                            <li>考虑启用双重认证</li>
+                        </ul>
+                        <p>客服热线：400-123-4567</p>
+                        <p>安全团队</p>
+                    `,
+                    time: '2024-09-28T11:00:00',
+                    tags: ['password']
+                }
+            ],
+            'order': [
+                {
+                    sender: 'HackShop商城',
+                    subject: '订单确认：#HS2024092901',
+                    preview: '您的订单已确认！订单包含：iPhone 14 Pro 256GB 深空黑色 x1，总金额：¥8,999。预计配送时间：2-3个工作日...',
+                    content: `
+                        <p>尊敬的用户：</p>
+                        <p>感谢您的购买！您的订单已确认：</p>
+                        <h4>订单详情：</h4>
+                        <ul>
+                            <li><strong>订单号：</strong>#HS2024092901</li>
+                            <li><strong>商品：</strong>iPhone 14 Pro 256GB 深空黑色 x1</li>
+                            <li><strong>总金额：</strong>¥8,999</li>
+                            <li><strong>预计配送：</strong>2-3个工作日</li>
+                            <li><strong>收货地址：</strong>北京市朝阳区xxx路xxx号</li>
+                        </ul>
+                        <p>您可以在用户中心查看订单详情和物流信息。</p>
+                        <p>感谢您的惠顾！</p>
+                    `,
+                    time: '2024-09-29T08:45:00',
+                    tags: ['order']
+                }
+            ],
+            'security': [
+                {
+                    sender: '安全警报系统',
+                    subject: '紧急：检测到异常登录活动',
+                    preview: '我们检测到您的账户有异常登录活动。请立即点击此链接验证您的身份：http://malicious-site.com/verify?redirect=hackshop.com...',
+                    content: `
+                        <p>尊敬的用户：</p>
+                        <p>我们检测到您的账户有异常登录活动：</p>
+                        <ul>
+                            <li><strong>登录时间：</strong>2024-09-29 07:15:32</li>
+                            <li><strong>登录地点：</strong>未知地点</li>
+                            <li><strong>IP地址：</strong>192.168.1.100</li>
+                            <li><strong>设备：</strong>未知设备</li>
+                        </ul>
+                        <p>请立即点击以下链接验证您的身份：</p>
+                        <p><a href="http://malicious-site.com/verify?redirect=hackshop.com" style="color: #007bff;">http://malicious-site.com/verify?redirect=hackshop.com</a></p>
+                        <div class="security-warning danger">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>钓鱼邮件警告</h5>
+                            <p>此邮件演示了钓鱼攻击的常见特征：</p>
+                            <ul>
+                                <li>制造紧急情况，要求立即采取行动</li>
+                                <li>链接指向恶意网站 (malicious-site.com)</li>
+                                <li>诱骗用户点击恶意链接</li>
+                                <li>试图窃取用户登录凭据</li>
+                            </ul>
+                            <p><strong>识别方法：</strong></p>
+                            <ul>
+                                <li>检查发件人邮箱的真实性</li>
+                                <li>悬停链接查看实际URL</li>
+                                <li>不要点击可疑链接</li>
+                                <li>直接访问官方网站进行验证</li>
+                            </ul>
+                        </div>
+                        <p>如果这不是您本人的操作，请立即修改密码并联系客服。</p>
+                        <p>安全团队</p>
+                    `,
+                    time: '2024-09-29T07:20:00',
+                    tags: ['security', 'phishing'],
+                    vulnerable: true
+                }
+            ]
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为邮件项添加点击事件
+            document.querySelectorAll('.email-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    showEmailModal(this);
+                });
+            });
+
+            // 更新统计数字
+            updateStats();
+
+            // 初始化用户菜单
+            initializeUserMenu();
+        });
+
+        // 初始化用户菜单
+        function initializeUserMenu() {
+            // 点击页面其他地方关闭用户下拉菜单
+            document.addEventListener('click', function(event) {
+                const userMenu = document.querySelector('.user-menu');
+                const userDropdown = document.getElementById('user-dropdown');
+
+                if (userMenu && !userMenu.contains(event.target)) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // 显示邮件详情模态框
+        function showEmailModal(emailItem) {
+            const modal = document.getElementById('emailModal');
+            const title = document.getElementById('modalTitle');
+            const sender = document.getElementById('modalSender');
+            const time = document.getElementById('modalTime');
+            const content = document.getElementById('modalContent');
+            const securityWarning = document.getElementById('securityWarning');
+            const securityWarningText = document.getElementById('securityWarningText');
+
+            // 获取邮件信息
+            const subject = emailItem.querySelector('.email-subject').textContent;
+            const senderText = emailItem.querySelector('.email-sender').textContent.trim();
+            const timeText = emailItem.querySelector('.email-time').textContent;
+            const isVulnerable = emailItem.dataset.vulnerable === 'true';
+
+            // 查找对应的邮件内容
+            let emailContent = emailItem.querySelector('.email-preview').textContent;
+            let warningText = '';
+
+            // 根据邮件类型设置详细内容
+            if (isVulnerable) {
+                if (subject.includes('密码重置')) {
+                    emailContent = emailData.password[0].content;
+                    warningText = '此邮件演示了HOST注入漏洞，链接参数可能被恶意修改。';
+                } else if (subject.includes('异常登录')) {
+                    emailContent = emailData.security[0].content;
+                    warningText = '此邮件演示了钓鱼攻击，包含恶意链接，请不要点击！';
+                }
+            } else {
+                // 查找对应的内容
+                for (let category in emailData) {
+                    for (let email of emailData[category]) {
+                        if (email.subject === subject) {
+                            emailContent = email.content;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 设置模态框内容
+            title.textContent = subject;
+            sender.innerHTML = `<i class="fas fa-user me-1"></i>${senderText}`;
+            time.textContent = timeText;
+            content.innerHTML = emailContent;
+
+            // 显示安全警告
+            if (warningText) {
+                securityWarning.style.display = 'block';
+                securityWarningText.textContent = warningText;
+                securityWarning.className = 'security-warning' + (subject.includes('异常登录') ? ' danger' : '');
+            } else {
+                securityWarning.style.display = 'none';
+            }
+
+            // 标记为已读
+            emailItem.classList.remove('unread');
+            updateStats();
+
+            // 显示模态框
+            modal.classList.add('show');
+        }
+
+        // 关闭邮件详情模态框
+        function closeEmailModal() {
+            const modal = document.getElementById('emailModal');
+            modal.classList.remove('show');
+        }
+
+        // 回复邮件
+        function replyEmail() {
+            showNotification('回复功能正在开发中...', 'info');
+        }
+
+        // 删除邮件
+        function deleteEmail() {
+            if (confirm('确定要删除这封邮件吗？')) {
+                showNotification('邮件已删除', 'success');
+                closeEmailModal();
+            }
+        }
+
+        // 按分类筛选邮件
+        function filterByCategory(category) {
+            const emails = document.querySelectorAll('.email-item');
+            const tags = document.querySelectorAll('.category-tag');
+
+            // 更新标签状态
+            tags.forEach(tag => tag.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 筛选邮件
+            emails.forEach(email => {
+                if (category === 'all' || email.dataset.category === category) {
+                    email.style.display = 'block';
+                } else {
+                    email.style.display = 'none';
+                }
+            });
+
+            updateStats();
+        }
+
+        // 搜索邮件
+        function searchEmails() {
+            const searchTerm = document.getElementById('emailSearch').value.toLowerCase();
+            const emails = document.querySelectorAll('.email-item');
+
+            emails.forEach(email => {
+                const text = email.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    email.style.display = 'block';
+                } else {
+                    email.style.display = 'none';
+                }
+            });
+
+            updateStats();
+        }
+
+        // 排序邮件
+        function sortEmails(sortType) {
+            const emailList = document.getElementById('emailList');
+            const emails = Array.from(emailList.children);
+
+            emails.sort((a, b) => {
+                if (sortType === 'time') {
+                    return new Date(b.dataset.time) - new Date(a.dataset.time);
+                } else if (sortType === 'sender') {
+                    const senderA = a.querySelector('.email-sender').textContent;
+                    const senderB = b.querySelector('.email-sender').textContent;
+                    return senderA.localeCompare(senderB);
+                }
+                return 0;
+            });
+
+            // 重新排列邮件
+            emails.forEach(email => emailList.appendChild(email));
+
+            showNotification('已按' + (sortType === 'time' ? '时间' : '发件人') + '排序', 'info');
+        }
+
+        // 标记全部为已读
+        function markAllAsRead() {
+            const emails = document.querySelectorAll('.email-item.unread');
+            emails.forEach(email => email.classList.remove('unread'));
+            updateStats();
+            showNotification('所有邮件已标记为已读', 'success');
+        }
+
+        // 更新统计数字
+        function updateStats() {
+            const visibleEmails = document.querySelectorAll('.email-item:not([style*="display: none"])');
+            const unreadEmails = document.querySelectorAll('.email-item.unread:not([style*="display: none"])');
+            const securityEmails = document.querySelectorAll('.email-item[data-vulnerable="true"]:not([style*="display: none"])');
+
+            document.getElementById('totalCount').textContent = visibleEmails.length;
+            document.getElementById('unreadCount').textContent = unreadEmails.length;
+            document.getElementById('securityCount').textContent = securityEmails.length;
+        }
+
+        // 搜索功能
+        function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim();
+
+            if (query) {
+                console.log('搜索商品:', query);
+                showNotification('正在搜索: ' + query, 'info');
+            }
+        }
+
+        // 通知系统
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // 3秒后自动关闭
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        // 用户菜单切换功能
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // 退出登录功能
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                showAlert('正在退出登录...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            }
+        }
+
+        // 语言切换功能
+        function toggleLanguageDropdown() {
+            const dropdown = document.getElementById('language-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function changeLanguage(lang) {
+            const currentLang = document.getElementById('current-lang');
+            const langNames = {
+                'zh': '中文',
+                'en': 'English',
+                'ru': 'Русский'
+            };
+
+            currentLang.textContent = langNames[lang];
+
+            // 更新活跃状态
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.closest('.language-option').classList.add('active');
+
+            // 关闭下拉菜单
+            document.getElementById('language-dropdown').classList.remove('show');
+
+            // 这里可以添加实际的语言切换逻辑
+            console.log('语言已切换至:', lang);
+        }
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', function(event) {
+            const languageSwitcher = document.querySelector('.language-switcher');
+            const dropdown = document.getElementById('language-dropdown');
+
+            if (languageSwitcher && !languageSwitcher.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // 点击模态框外部关闭
+        document.getElementById('emailModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeEmailModal();
+            }
+        });
+    </script>
+</body>
+</html>

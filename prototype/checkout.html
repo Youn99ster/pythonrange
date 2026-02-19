@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackShop - 订单确认</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* 重置样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 基础变量 */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --success-color: #27ae60;
+            --info-color: #3498db;
+            --warning-color: #f39c12;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --gray-color: #7f8c8d;
+            --white-color: #ffffff;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-xxl: 48px;
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 16px;
+            --box-shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --box-shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+            --box-shadow-lg: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        /* 全局样式 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background-color: var(--white-color) !important;
+            box-shadow: var(--box-shadow-sm);
+            padding: 0;
+            margin-bottom: 0;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-nav {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--dark-color) !important;
+            font-weight: 500;
+            padding: 0.75rem 1rem !important;
+            transition: color 0.3s ease;
+            text-decoration: none;
+            display: block;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        .navbar-nav .nav-link.active {
+            color: var(--primary-color) !important;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .cart-icon {
+            position: relative;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 语言切换组件 */
+        .language-switcher {
+            position: relative;
+            margin-right: 1rem;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--light-color);
+            transition: border-color 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            border-color: var(--primary-color);
+        }
+
+        .language-btn {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-md);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .language-btn:hover {
+            border-color: var(--primary-color);
+            background-color: var(--light-color);
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--box-shadow-md);
+            z-index: 1000;
+            min-width: 150px;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .language-dropdown.show {
+            display: block;
+        }
+
+        .language-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .language-option:hover {
+            background-color: var(--light-color);
+        }
+
+        .language-option.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* 用户下拉菜单 */
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--box-shadow-md);
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-info {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .user-email {
+            font-size: 0.875rem;
+            color: var(--gray-color);
+        }
+
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            clear: both;
+            font-weight: 400;
+            color: var(--dark-color);
+            text-decoration: none;
+            background-color: transparent;
+            border: 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--light-color);
+            color: var(--primary-color);
+        }
+
+        .dropdown-divider {
+            height: 0;
+            margin: 0.5rem 0;
+            overflow: hidden;
+            border-top: 1px solid #eee;
+        }
+
+        /* Bootstrap dropdown-item 兼容性 */
+        .dropdown-item i {
+            margin-right: 0.5rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            width: 250px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.1);
+        }
+
+        .search-box button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            min-height: calc(100vh - 200px);
+            padding: 2rem 0;
+        }
+
+        /* 结算流程 */
+        .checkout-container {
+            background-color: var(--white-color);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--box-shadow-sm);
+            overflow: hidden;
+        }
+
+        .checkout-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: var(--spacing-xl);
+            text-align: center;
+        }
+
+        .checkout-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .checkout-subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: var(--spacing-sm);
+        }
+
+        /* 步骤指示器 */
+        .checkout-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: var(--spacing-xl) 0;
+            background-color: var(--light-color);
+        }
+
+        .checkout-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background-color: #ddd;
+            z-index: 1;
+        }
+
+        .step {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ddd;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: var(--spacing-sm);
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-number {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .step-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #666;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+
+        .step.active .step-title,
+        .step.completed .step-title {
+            color: var(--primary-color);
+        }
+
+        /* 步骤内容 */
+        .step-content {
+            padding: var(--spacing-xl);
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .step-content h3 {
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-lg);
+            font-size: 1.5rem;
+        }
+
+        /* 地址管理 */
+        .address-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .address-item {
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .address-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--box-shadow-sm);
+        }
+
+        .address-item.selected {
+            border-color: var(--primary-color);
+            background-color: #e3f2fd;
+        }
+
+        .address-item.selected::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: var(--spacing-sm);
+            right: var(--spacing-sm);
+            color: var(--success-color);
+            font-size: 1.2rem;
+        }
+
+        .address-name {
+            font-weight: bold;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .address-phone {
+            color: var(--gray-color);
+            font-size: 0.9rem;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .address-text {
+            color: var(--dark-color);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .add-address-btn {
+            border: 2px dashed #ddd;
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-xl);
+            text-align: center;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+        }
+
+        .add-address-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background-color: #f8f9fa;
+        }
+
+        .add-address-btn i {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        /* 商品清单 */
+        .order-summary {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-item-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .order-item-info {
+            flex: 1;
+        }
+
+        .order-item-name {
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .order-item-specs {
+            font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+
+        .order-item-price {
+            font-weight: bold;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .order-item-quantity {
+            color: var(--gray-color);
+            font-size: 0.9rem;
+        }
+
+        /* 价格计算 */
+        .price-summary {
+            background-color: var(--white-color);
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-xl);
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid #eee;
+        }
+
+        .price-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .price-label {
+            color: var(--gray-color);
+        }
+
+        .price-value {
+            font-weight: 600;
+        }
+
+        .price-row.total {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            border-top: 2px solid #ddd;
+            padding-top: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+
+        .price-row.total .price-value {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+        }
+
+        /* 支付方式 */
+        .payment-methods {
+            display: grid;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .payment-method {
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .payment-method:hover {
+            border-color: var(--primary-color);
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary-color);
+            background-color: #e3f2fd;
+        }
+
+        .payment-method i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-name {
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .payment-description {
+            font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+
+        /* CSRF漏洞警告 */
+        .csrf-warning {
+            background-color: #fff3e0;
+            border: 1px solid var(--warning-color);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .csrf-warning h5 {
+            color: var(--warning-color);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .csrf-warning p {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .csrf-warning .code-block {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-sm);
+            padding: var(--spacing-sm);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: var(--spacing-sm) 0;
+        }
+
+        /* 按钮样式 */
+        .step-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid #ddd;
+        }
+
+        .btn-step {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-prev {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-prev:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-next {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-next:hover {
+            background-color: #34495e;
+        }
+
+        .btn-confirm {
+            background-color: var(--success-color);
+            color: white;
+            font-size: 1.2rem;
+            padding: 1rem 3rem;
+        }
+
+        .btn-confirm:hover {
+            background-color: #229954;
+        }
+
+        /* 成功页面 */
+        .success-content {
+            text-align: center;
+            padding: var(--spacing-xxl) 0;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .success-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .success-message {
+            font-size: 1.1rem;
+            color: var(--gray-color);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .order-details {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-xl);
+            margin: var(--spacing-xl) 0;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 页脚 */
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: var(--spacing-xxl) 0;
+            margin-top: var(--spacing-xxl);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .footer-section h5 {
+            color: var(--white-color);
+            margin-bottom: var(--spacing-md);
+            font-weight: 600;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .footer-section a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--white-color);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid #34495e;
+            color: #bdc3c7;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .search-box input {
+                width: 150px;
+            }
+
+            .checkout-steps {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+
+            .checkout-steps::before {
+                display: none;
+            }
+
+            .address-list {
+                grid-template-columns: 1fr;
+            }
+
+            .order-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .step-actions {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+
+            .btn-step {
+                width: 100%;
+            }
+
+            .navbar-nav {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .navbar-nav .nav-link {
+                border-bottom: 1px solid var(--light-color);
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .pulse {
+            animation: pulse 0.3s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: var(--border-radius-lg);
+            max-width: 500px;
+            width: 90%;
+            padding: var(--spacing-xl);
+            box-shadow: var(--box-shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-color);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <!-- Logo和网站名称 -->
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag me-2"></i>HackShop
+            </a>
+
+            <!-- 移动端菜单按钮 -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- 导航菜单 -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-th-large me-1"></i>商品分类
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-tags me-1"></i>优惠活动
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-headset me-1"></i>客服中心
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- 搜索框 -->
+                <div class="search-box me-3">
+                    <input type="text" placeholder="搜索商品..." id="searchInput">
+                    <button type="button" onclick="performSearch()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <!-- 用户操作区域 -->
+                <div class="d-flex align-items-center gap-3">
+                    <!-- 语言切换组件 -->
+                    <div class="language-switcher">
+                        <button class="language-btn" onclick="toggleLanguageDropdown()">
+                            <i class="fas fa-globe"></i>
+                            <span id="current-lang">中文</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="language-dropdown" id="language-dropdown">
+                            <div class="language-option active" onclick="changeLanguage('zh')">
+                                <i class="fas fa-flag"></i>
+                                <span>中文</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('en')">
+                                <i class="fas fa-flag"></i>
+                                <span>English</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('ru')">
+                                <i class="fas fa-flag"></i>
+                                <span>Русский</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-badge">0</span>
+                    </a>
+                    <!-- 用户头像（已登录状态） -->
+                    <div class="user-menu">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
+                             alt="用户头像"
+                             class="user-avatar"
+                             onclick="toggleUserMenu()">
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="user-info">
+                                <div class="user-name">张三</div>
+                                <div class="user-email">zhangsan@example.com</div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a href="user-center.html" class="dropdown-item">
+                                <i class="fas fa-user me-2"></i>用户中心
+                            </a>
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-cog me-2"></i>账户设置
+                            </a>
+                            <a href="user-center.html" class="dropdown-item">
+                                <i class="fas fa-list-alt me-2"></i>我的订单
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>退出登录
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="main-content">
+        <div class="container">
+            <!-- 结算容器 -->
+            <div class="checkout-container fade-in-up">
+                <!-- 结算头部 -->
+                <div class="checkout-header">
+                    <h1 class="checkout-title">
+                        <i class="fas fa-credit-card me-2"></i>订单确认
+                    </h1>
+                    <p class="checkout-subtitle">请确认您的订单信息并选择支付方式</p>
+                </div>
+
+                <!-- 步骤指示器 -->
+                <div class="checkout-steps">
+                    <div class="step active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-title">确认收货地址</div>
+                    </div>
+                    <div class="step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-title">确认订单信息</div>
+                    </div>
+                    <div class="step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">选择支付方式</div>
+                    </div>
+                    <div class="step" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-title">完成支付</div>
+                    </div>
+                </div>
+
+                <!-- 步骤1: 确认收货地址 -->
+                <div class="step-content active" id="step1">
+                    <h3><i class="fas fa-map-marker-alt me-2"></i>确认收货地址</h3>
+
+                    <div class="address-list">
+                        <div class="address-item selected" onclick="selectAddress(this)">
+                            <div class="address-name">张三</div>
+                            <div class="address-phone">138****8888</div>
+                            <div class="address-text">北京市朝阳区建国门外大街1号国贸大厦A座1001室</div>
+                        </div>
+                        <div class="address-item" onclick="selectAddress(this)">
+                            <div class="address-name">李四</div>
+                            <div class="address-phone">139****9999</div>
+                            <div class="address-text">上海市浦东新区陆家嘴环路1000号恒生银行大厦20楼</div>
+                        </div>
+                        <div class="add-address-btn" onclick="showAddAddressModal()">
+                            <i class="fas fa-plus"></i>
+                            <span>添加新地址</span>
+                        </div>
+                    </div>
+
+                    <div class="step-actions">
+                        <div></div>
+                        <button class="btn-step btn-next" onclick="nextStep(1)">下一步</button>
+                    </div>
+                </div>
+
+                <!-- 步骤2: 确认订单信息 -->
+                <div class="step-content" id="step2">
+                    <h3><i class="fas fa-shopping-bag me-2"></i>确认订单信息</h3>
+
+                    <div class="order-summary">
+                        <h4>商品清单</h4>
+                        <div class="order-items">
+                            <!-- 订单商品将通过JavaScript动态加载 -->
+                        </div>
+                    </div>
+
+                    <div class="price-summary">
+                        <div class="price-row">
+                            <span class="price-label">商品总额</span>
+                            <span class="price-value" id="subtotal">¥0</span>
+                        </div>
+                        <div class="price-row">
+                            <span class="price-label">运费</span>
+                            <span class="price-value" id="shipping">¥0</span>
+                        </div>
+                        <div class="price-row">
+                            <span class="price-label">优惠券</span>
+                            <span class="price-value" id="discount">¥0</span>
+                        </div>
+                        <div class="price-row total">
+                            <span class="price-label">应付金额</span>
+                            <span class="price-value" id="total">¥0</span>
+                        </div>
+                        <div class="price-row">
+                            <span class="price-label">商品总数</span>
+                            <span class="price-value" id="totalItems">0 件</span>
+                        </div>
+                    </div>
+
+                    <div class="step-actions">
+                        <button class="btn-step btn-prev" onclick="prevStep(2)">上一步</button>
+                        <button class="btn-step btn-next" onclick="nextStep(2)">下一步</button>
+                    </div>
+                </div>
+
+                <!-- 步骤3: 选择支付方式 -->
+                <div class="step-content" id="step3">
+                    <h3><i class="fas fa-credit-card me-2"></i>选择支付方式</h3>
+
+                    <!-- CSRF漏洞警告 -->
+                    <div class="csrf-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>CSRF漏洞演示</h5>
+                        <p>当前支付表单存在CSRF（跨站请求伪造）漏洞，攻击者可能诱导您在不知情的情况下完成支付。</p>
+                        <div class="code-block">
+                            &lt;form action="/checkout/pay" method="POST"&gt;<br>
+                            &nbsp;&nbsp;&lt;input type="hidden" name="amount" value="10798"&gt;<br>
+                            &nbsp;&nbsp;&lt;input type="hidden" name="order_id" value="HS2024092901"&gt;<br>
+                            &nbsp;&nbsp;&lt;!-- 缺少CSRF Token --&gt;<br>
+                            &lt;/form&gt;
+                        </div>
+                        <p><strong>安全风险：</strong>攻击者可以创建恶意网站，在您访问时自动提交此表单完成支付。</p>
+                        <p><strong>防护建议：</strong>应该在表单中加入CSRF Token验证。</p>
+                    </div>
+
+                    <div class="payment-methods">
+                        <div class="payment-method selected" onclick="selectPayment(this)">
+                            <i class="fas fa-wallet"></i>
+                            <div class="payment-info">
+                                <div class="payment-name">余额支付</div>
+                                <div class="payment-description">使用账户余额支付，当前余额：¥15,000</div>
+                            </div>
+                        </div>
+                        <div class="payment-method" onclick="selectPayment(this)">
+                            <i class="fas fa-university"></i>
+                            <div class="payment-info">
+                                <div class="payment-name">银行卡支付</div>
+                                <div class="payment-description">支持各大银行借记卡和信用卡</div>
+                            </div>
+                        </div>
+                        <div class="payment-method" onclick="selectPayment(this)">
+                            <i class="fab fa-alipay"></i>
+                            <div class="payment-info">
+                                <div class="payment-name">支付宝</div>
+                                <div class="payment-description">快速安全的在线支付</div>
+                            </div>
+                        </div>
+                        <div class="payment-method" onclick="selectPayment(this)">
+                            <i class="fab fa-weixin"></i>
+                            <div class="payment-info">
+                                <div class="payment-name">微信支付</div>
+                                <div class="payment-description">便捷的移动支付方式</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step-actions">
+                        <button class="btn-step btn-prev" onclick="prevStep(3)">上一步</button>
+                        <button class="btn-step btn-next" onclick="nextStep(3)">确认支付</button>
+                    </div>
+                </div>
+
+                <!-- 步骤4: 完成支付 -->
+                <div class="step-content" id="step4">
+                    <div class="success-content">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h2 class="success-title">支付成功！</h2>
+                        <p class="success-message">您的订单已成功支付，我们将尽快为您发货。</p>
+
+                        <div class="order-details">
+                            <h4>订单详情</h4>
+                            <div class="price-row">
+                                <span class="price-label">订单编号</span>
+                                <span class="price-value">#HS2024092901</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="price-label">支付金额</span>
+                                <span class="price-value">¥10,798</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="price-label">支付方式</span>
+                                <span class="price-value">余额支付</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="price-label">预计送达</span>
+                                <span class="price-value">2-3个工作日</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="price-label">收货地址</span>
+                                <span class="price-value">北京市朝阳区建国门外大街1号国贸大厦A座1001室</span>
+                            </div>
+                        </div>
+
+                        <div class="step-actions">
+                            <button class="btn-step btn-prev" onclick="prevStep(4)">返回查看</button>
+                            <a href="index.html" class="btn-step btn-confirm">继续购物</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 添加地址模态框 -->
+    <div class="modal" id="addAddressModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">添加新地址</h3>
+                <button class="modal-close" onclick="closeAddAddressModal()">&times;</button>
+            </div>
+            <form id="addAddressForm">
+                <div class="form-group">
+                    <label class="form-label">收货人</label>
+                    <input type="text" class="form-control" id="recipientName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">手机号码</label>
+                    <input type="tel" class="form-control" id="recipientPhone" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">详细地址</label>
+                    <textarea class="form-control" id="recipientAddress" rows="3" required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-step btn-prev" onclick="closeAddAddressModal()">取消</button>
+                    <button type="submit" class="btn-step btn-next">添加地址</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h5>关于我们</h5>
+                    <ul>
+                        <li><a href="#">公司简介</a></li>
+                        <li><a href="#">联系我们</a></li>
+                        <li><a href="#">招聘信息</a></li>
+                        <li><a href="#">商家入驻</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>客户服务</h5>
+                    <ul>
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">售后服务</a></li>
+                        <li><a href="#">配送说明</a></li>
+                        <li><a href="#">支付方式</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>商家合作</h5>
+                    <ul>
+                        <li><a href="#">商家入驻</a></li>
+                        <li><a href="#">商家中心</a></li>
+                        <li><a href="#">运营服务</a></li>
+                        <li><a href="#">广告服务</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>关注我们</h5>
+                    <ul>
+                        <li><a href="#"><i class="fab fa-weixin"></i> 微信公众号</a></li>
+                        <li><a href="#"><i class="fab fa-weibo"></i> 新浪微博</a></li>
+                        <li><a href="#"><i class="fab fa-qq"></i> QQ群</a></li>
+                        <li><a href="#">客服热线: 400-123-4567</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 HackShop. 保留所有权利 | 京ICP备12345678号 | 京公网安备11010802012345号</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // 当前步骤
+        let currentStep = 1;
+        let orderData = null;
+
+        // 页面加载时从localStorage获取订单数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrderData();
+            initializeCheckout();
+            initializeUserMenu();
+        });
+
+        // 初始化用户菜单
+        function initializeUserMenu() {
+            // 点击页面其他地方关闭用户下拉菜单
+            document.addEventListener('click', function(event) {
+                const userMenu = document.querySelector('.user-menu');
+                const userDropdown = document.getElementById('user-dropdown');
+
+                if (userMenu && !userMenu.contains(event.target)) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // 加载订单数据
+        function loadOrderData() {
+            const savedData = localStorage.getItem('checkoutOrderData');
+            if (savedData) {
+                orderData = JSON.parse(savedData);
+                displayOrderData();
+            } else {
+                // 如果没有订单数据，重定向到购物车页面
+                showNotification('没有找到订单信息，正在跳转到购物车...', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'cart.html';
+                }, 2000);
+            }
+        }
+
+        // 显示订单数据
+        function displayOrderData() {
+            if (!orderData) return;
+
+            // 更新订单商品列表
+            const orderItemsContainer = document.querySelector('.order-items');
+            if (orderItemsContainer) {
+                orderItemsContainer.innerHTML = '';
+                orderData.items.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'order-item';
+                    itemElement.innerHTML = `
+                        <div class="order-item-image">
+                            <img src="${item.image}" alt="${item.name}">
+                        </div>
+                        <div class="order-item-info">
+                            <div class="order-item-name">${item.name}</div>
+                            <div class="order-item-desc">${item.description}</div>
+                            <div class="order-item-price">¥${item.price.toLocaleString()} × ${item.quantity}</div>
+                        </div>
+                        <div class="order-item-subtotal">¥${(item.price * item.quantity).toLocaleString()}</div>
+                    `;
+                    orderItemsContainer.appendChild(itemElement);
+                });
+            }
+
+            // 更新价格汇总
+            updateOrderSummary();
+        }
+
+        // 更新订单汇总
+        function updateOrderSummary() {
+            if (!orderData) return;
+
+            const elements = {
+                'subtotal': document.getElementById('subtotal'),
+                'discount': document.getElementById('discount'),
+                'shipping': document.getElementById('shipping'),
+                'total': document.getElementById('total'),
+                'totalItems': document.getElementById('totalItems')
+            };
+
+            if (elements.subtotal) {
+                elements.subtotal.textContent = `¥${orderData.subtotal.toLocaleString()}`;
+            }
+            if (elements.discount) {
+                elements.discount.textContent = `-¥${orderData.discount.toLocaleString()}`;
+            }
+            if (elements.shipping) {
+                elements.shipping.textContent = orderData.shipping === 0 ? '免费' : `¥${orderData.shipping.toLocaleString()}`;
+            }
+            if (elements.total) {
+                elements.total.textContent = `¥${orderData.total.toLocaleString()}`;
+            }
+            if (elements.totalItems) {
+                elements.totalItems.textContent = `${orderData.totalItems} 件`;
+            }
+        }
+
+        // 初始化结算页面
+        function initializeCheckout() {
+            // 检查是否有选中的地址和支付方式
+            checkFormCompletion();
+        }
+
+        // 检查表单完成状态
+        function checkFormCompletion() {
+            const selectedAddress = document.querySelector('.address-item.selected');
+            const selectedPayment = document.querySelector('.payment-method.selected');
+
+            // 这里可以添加逻辑来启用/禁用下一步按钮
+        }
+
+        // 步骤切换
+        function nextStep(step) {
+            if (step < 4) {
+                // 隐藏当前步骤
+                document.getElementById(`step${step}`).classList.remove('active');
+                document.querySelector(`[data-step="${step}"]`).classList.remove('active');
+
+                // 显示下一步骤
+                currentStep = step + 1;
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+
+                // 更新步骤状态
+                document.querySelector(`[data-step="${step}"]`).classList.add('completed');
+
+                // 滚动到顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevStep(step) {
+            if (step > 1) {
+                // 隐藏当前步骤
+                document.getElementById(`step${step}`).classList.remove('active');
+                document.querySelector(`[data-step="${step}"]`).classList.remove('active');
+
+                // 显示上一步骤
+                currentStep = step - 1;
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+
+                // 滚动到顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // 选择地址
+        function selectAddress(element) {
+            document.querySelectorAll('.address-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        // 选择支付方式
+        function selectPayment(element) {
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        // 显示添加地址模态框
+        function showAddAddressModal() {
+            document.getElementById('addAddressModal').classList.add('show');
+        }
+
+        // 关闭添加地址模态框
+        function closeAddAddressModal() {
+            document.getElementById('addAddressModal').classList.remove('show');
+            document.getElementById('addAddressForm').reset();
+        }
+
+        // 添加地址表单提交
+        document.getElementById('addAddressForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('recipientName').value;
+            const phone = document.getElementById('recipientPhone').value;
+            const address = document.getElementById('recipientAddress').value;
+
+            if (name && phone && address) {
+                // 创建新地址项
+                const addressList = document.querySelector('.address-list');
+                const addBtn = document.querySelector('.add-address-btn');
+
+                const newAddress = document.createElement('div');
+                newAddress.className = 'address-item selected';
+                newAddress.onclick = function() { selectAddress(this); };
+                newAddress.innerHTML = `
+                    <div class="address-name">${name}</div>
+                    <div class="address-phone">${phone}</div>
+                    <div class="address-text">${address}</div>
+                `;
+
+                // 插入到添加按钮前面
+                addressList.insertBefore(newAddress, addBtn);
+
+                // 取消其他地址的选中状态
+                document.querySelectorAll('.address-item:not(:last-child)').forEach(item => {
+                    if (item !== newAddress) {
+                        item.classList.remove('selected');
+                    }
+                });
+
+                // 关闭模态框
+                closeAddAddressModal();
+
+                // 显示成功提示
+                showNotification('地址添加成功！', 'success');
+            }
+        });
+
+        // 搜索功能
+        function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim();
+
+            if (query) {
+                console.log('搜索商品:', query);
+                showNotification('正在搜索: ' + query, 'info');
+            }
+        }
+
+        // 通知系统
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // 3秒后自动关闭
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        // 用户菜单切换功能
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // 退出登录功能
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                showAlert('正在退出登录...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            }
+        }
+
+        // 语言切换功能
+        function toggleLanguageDropdown() {
+            const dropdown = document.getElementById('language-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function changeLanguage(lang) {
+            const currentLang = document.getElementById('current-lang');
+            const langNames = {
+                'zh': '中文',
+                'en': 'English',
+                'ru': 'Русский'
+            };
+
+            currentLang.textContent = langNames[lang];
+
+            // 更新活跃状态
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.closest('.language-option').classList.add('active');
+
+            // 关闭下拉菜单
+            document.getElementById('language-dropdown').classList.remove('show');
+
+            // 这里可以添加实际的语言切换逻辑
+            console.log('语言已切换至:', lang);
+        }
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', function(event) {
+            const languageSwitcher = document.querySelector('.language-switcher');
+            const dropdown = document.getElementById('language-dropdown');
+
+            if (languageSwitcher && !languageSwitcher.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // 点击模态框外部关闭
+        document.getElementById('addAddressModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAddAddressModal();
+            }
+        });
+
+        // CSRF漏洞演示 - 模拟自动提交
+        setTimeout(() => {
+            if (currentStep === 3) {
+                console.log('CSRF漏洞演示: 检测到可能的恶意自动提交尝试');
+                console.log('在实际攻击中，此时可能会自动完成支付');
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
