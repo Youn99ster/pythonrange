@@ -18,4 +18,14 @@ app/uploads/
 
 # IDE and OS files
 .idea/
+.vscode/
+.sonarlint/
 .DS_Store
+
+#agent
+.claude/
+
+# Local environment files
+.env
+.env.*
+!.env.example

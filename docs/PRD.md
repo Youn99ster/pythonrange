@@ -54,6 +54,7 @@
 - 启动迁移策略：`db upgrade` + `stamp head` fallback
 - 日志：控制台 + 轮转文件（`logs/app.log`）
 - 实验脚本：`scripts/seed.py`、`scripts/reset_lab.py`
+- 默认种子账号：`admin/admin123`、`alice@test.com/alice123`
 
 ## 7. 验收标准
 - `docker compose up -d --build` 后可访问 `127.0.0.1:8000`
@@ -63,5 +64,6 @@
 - 关键页面交互提示与错误提示可正常显示
 
 ## 8. 文档历史
+- v4.1（2026-02-20）：补充种子账号口径并与容器运行方式保持一致
 - v4.0（2026-02-20）：删除特定措辞，统一按当前代码状态描述质量治理范围
 - v3.9（2026-02-20）：同步代码质量治理范围说明

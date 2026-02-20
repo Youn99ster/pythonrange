@@ -31,7 +31,7 @@ pythonrange 是一个以仿真电商业务为核心的 Web 安全教学靶场。
 - V-SSTI
 - V-Admin-AES
 
-## 使用方式（Docker Only）
+## 使用方式（仅容器）
 
 ### 1. 启动（推荐完整重置）
 ```bash
@@ -101,6 +101,10 @@ start.sh
 docker-compose.yml
 Dockerfile
 ```
+
+## 运行口径
+- 官方支持与验收路径：仅 Docker Compose。
+- 本地 Python 直接运行仅用于开发调试，不作为靶场交付与验收方式。
 
 ## 注意事项
 - 本项目包含“有意设计”的漏洞，仅用于授权教学与研究环境。

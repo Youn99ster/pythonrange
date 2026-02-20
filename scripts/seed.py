@@ -20,7 +20,7 @@ def seed():
                                 mainimg="/static/img/default.jpg", content="seed demo"))
 
         db.session.commit()
-        print("Seed complete: admin/admin123, alice/alice123")
+        print("Seed complete: admin/admin123, alice@test.com/alice123")
 
 if __name__ == "__main__":
     seed()

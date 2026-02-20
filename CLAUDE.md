@@ -24,11 +24,12 @@ HackShop is an immersive web security education platform built around a realisti
 ## Data Initialization and Lab Reset
 - `scripts/seed.py`: seed products/users/vouchers/mail/sample order
 - `scripts/reset_lab.py`: reset DB/cache then reseed
+- Default seed credentials: `admin/admin123`, `alice@test.com/alice123`
 - Optional boot flags:
   - `SEED_ON_BOOT=1`
   - `RESET_LAB_ON_BOOT=1`
 
-## Key Commands (Docker Only)
+## Key Commands (Container-Only)
 ### Start
 ```bash
 docker compose down -v
