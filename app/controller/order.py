@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from flask import Blueprint, abort, g, jsonify, redirect, render_template, request, url_for
@@ -7,6 +8,7 @@ from app.models.db import CartItem, Goods, Order, OrderItem, db
 from app.utils.tools import generate_orderid, is_login
 
 order_bp = Blueprint("order", __name__, url_prefix="/order")
+logger = logging.getLogger(__name__)
 
 
 def _json_data():
@@ -27,8 +29,8 @@ def inject_cart_count():
         try:
             count = CartItem.query.filter_by(user_id=g.user.id).count()
             return dict(cart_count=count)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("inject_cart_count failed: %s", e)
     return dict(cart_count=0)
 
 
@@ -102,7 +104,7 @@ def add_to_cart():
             return jsonify(
                 {
                     "success": False,
-                    "message": "该商品已经加入购物车",
+                    "message": "商品已在购物车中",
                     "code": "ALREADY_EXISTS",
                 }
             )
@@ -115,14 +117,14 @@ def add_to_cart():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"success": False, "message": "添加失败", "error": str(e)}), 500
+        return jsonify({"success": False, "message": "加入购物车失败", "error": str(e)}), 500
 
     cart_count = CartItem.query.filter_by(user_id=g.user.id).count()
     return (
         jsonify(
             {
                 "success": True,
-                "message": "已添加到购物车",
+                "message": "已加入购物车",
                 "quantity": cart_item.quantity,
                 "cart_count": cart_count,
             }
@@ -153,7 +155,7 @@ def decrease_cart_item():
 
     cart_item = CartItem.query.filter_by(user_id=g.user.id, goods_id=goods_id).first()
     if not cart_item:
-        return jsonify({"success": False, "message": "商品不在购物车中"}), 404
+        return jsonify({"success": False, "message": "购物车中不存在该商品"}), 404
 
     new_quantity = cart_item.quantity - quantity
     cart_item.quantity = max(new_quantity, 1)
@@ -163,7 +165,7 @@ def decrease_cart_item():
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": "操作失败", "error": str(e)}), 500
-    return jsonify({"success": True, "message": "已减少商品数量", "quantity": cart_item.quantity})
+    return jsonify({"success": True, "message": "商品数量已减少", "quantity": cart_item.quantity})
 
 
 @order_bp.route("/cart/update", methods=["POST"])
@@ -264,6 +266,7 @@ def checkout_cart():
     order_number = datetime.now().strftime("%Y%m%d%H%M%S") + str(g.user.id).zfill(4)
     total_amount = 0.0
 
+    # 结算时创建订单 + 订单项并清空购物车，保持在同一事务内提交。
     new_order = Order(
         id=order_id,
         order_number=order_number,
@@ -307,6 +310,7 @@ def checkout_cart():
 def checkout(order_id):
     if request.method == "POST":
         # V-CSRF-Pay vulnerability intentionally preserved for lab.
+        # 保留点：POST 支付时仅按订单ID查询，不校验当前用户归属。
         order = Order.query.filter_by(id=order_id).first()
     else:
         order = Order.query.filter_by(id=order_id, user_id=g.user.id).first()
@@ -316,7 +320,7 @@ def checkout(order_id):
 
     if request.method == "POST":
         if order.payment_status != "pending":
-            return render_template("error.html", message="订单状态异常"), 400
+            return render_template("order/checkout.html", order=order, error="订单状态异常"), 400
 
         payment_method = request.form.get("payment_method", "balance")
         address_id = request.form.get("address_id")
@@ -347,7 +351,7 @@ def checkout(order_id):
         except Exception as e:
             db.session.rollback()
             return render_template(
-                "order/checkout.html", order=order, error=f"支付处理失败: {e}"
+                "order/checkout.html", order=order, error=f"支付失败：{e}"
             )
 
     return render_template("order/checkout.html", order=order)

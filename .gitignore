@@ -1,1 +1,21 @@
-# Track all project files
+# Python cache and build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Test and tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime outputs
+logs/
+app/uploads/
+*.log
+*.xlsx
+
+# IDE and OS files
+.idea/
+.DS_Store

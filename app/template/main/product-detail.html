@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}{{ product.goodsname }} - HackShop{% endblock %}
 
 {% block head %}
 <style>
-    /* 主内容区域 */
+    /* 涓诲唴瀹瑰尯鍩?*/
     .main-content {
         min-height: calc(100vh - 200px);
         padding: 2rem 0;
@@ -258,7 +258,7 @@
         width: 30%;
     }
 
-    /* 面包屑导航 */
+    /* ???? */
     .breadcrumb {
         background: none;
         padding: 1rem 0;
@@ -274,7 +274,7 @@
         color: var(--primary-color);
     }
 
-    /* 响应式设计 */
+    /* ???? */
     @media (max-width: 768px) {
         .product-detail-container {
             padding: var(--spacing-md);
@@ -303,7 +303,7 @@
 {% block content %}
 <main class="main-content">
     <div class="container">
-        <!-- 面包屑导航 -->
+        <!-- ???? -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">首页</a></li>
@@ -347,8 +347,8 @@
                                 {% endif %}
                             {% endfor %}
                         </div>
-                        <span>{{ product.rating_avg }}分 ({{ product.rating_count }}条评价)</span>
-                        <span>| 已售{{ product.sales_count }}件</span>
+                        <span>{{ product.rating_avg }}鍒?({{ product.rating_count }}鏉¤瘎浠?</span>
+                        <span>| 宸插敭{{ product.sales_count }}浠?/span>
                     </div>
 
                     <div class="product-price">
@@ -361,7 +361,7 @@
 
                     <div class="product-tags">
                         <span class="product-tag">正品保证</span>
-                        <span class="product-tag">极速发货</span>
+                        <span class="product-tag">鏋侀€熷彂璐?/span>
                         <span class="product-tag">售后无忧</span>
                     </div>
 
@@ -382,8 +382,7 @@
 
                     <div class="purchase-buttons">
                         <button class="btn-add-cart" onclick="addToCart()">
-                            <i class="fas fa-shopping-cart"></i> 加入购物车
-                        </button>
+                            <i class="fas fa-shopping-cart"></i> 加入购物车                        </button>
                         <button class="btn-buy-now" onclick="buyNow()">
                             <i class="fas fa-bolt"></i> 立即购买
                         </button>
@@ -392,7 +391,7 @@
                     <div class="product-guarantees">
                         <div class="guarantee-item">
                             <i class="fas fa-check-circle guarantee-icon"></i>
-                            <span>正品保证，假一赔十</span>
+                            <span>姝ｅ搧淇濊瘉锛屽亣涓€璧斿崄</span>
                         </div>
                         <div class="guarantee-item">
                             <i class="fas fa-truck guarantee-icon"></i>
@@ -433,30 +432,19 @@
 
 {% block scripts %}
 <script>
-    // 显示通知
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
-        notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-        document.body.appendChild(notification);
-        setTimeout(() => { if (notification.parentNode) { notification.remove(); } }, 3000);
-    }
-
-    // 图片切换功能
-    function changeImage(thumbnail) {
-        const mainImage = document.getElementById('mainImage');
-        const thumbnails = document.querySelectorAll('.thumbnail');
-        mainImage.src = thumbnail.src;
+    // 商品图片预览切换
+    function changeMainImage(src, thumbnail) {
+        document.getElementById('mainProductImage').src = src;
+        const thumbnails = document.querySelectorAll('.thumbnail-item');
         thumbnails.forEach(thumb => thumb.classList.remove('active'));
         thumbnail.classList.add('active');
     }
 
-    // 数量控制
+    // 数量加减控制
     function changeQuantity(change) {
         const quantityInput = document.getElementById('quantity');
-        let currentValue = parseInt(quantityInput.value);
-        let newValue = currentValue + change;
+        const currentValue = parseInt(quantityInput.value);
+        const newValue = currentValue + change;
         const maxStock = {{ product.stock }};
 
         if (newValue >= 1 && newValue <= maxStock) {
@@ -468,7 +456,7 @@
     function addToCart() {
         const quantity = parseInt(document.getElementById('quantity').value);
         const productId = Number("{{ product.id }}");
-        
+
         fetch("{{ url_for('order.add_to_cart') }}", {
             method: 'POST',
             headers: {
@@ -480,41 +468,39 @@
                 quantity: quantity
             })
         })
-        .then(response => {
-            if (response.status === 401) {
-                // Not logged in
-                return response.json().then(data => {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    }
-                    throw new Error(data.message);
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showNotification('已添加到购物车', 'success');
-                // Update cart badge if possible
-                const cartBadge = document.querySelector('.cart-badge');
-                if (cartBadge && data.cart_count !== undefined) {
-                    cartBadge.textContent = data.cart_count;
+            .then(response => {
+                if (response.status === 401) {
+                    return response.json().then(data => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        }
+                        throw new Error(data.message || '请先登录');
+                    });
                 }
-            } else {
-                showNotification(data.message || '添加失败', 'danger');
-            }
-        })
-        .catch(error => {
-            if (error.message) {
-                showNotification(error.message, 'danger');
-            } else {
-                console.error('Error:', error);
-                showNotification('添加失败，请稍后重试', 'danger');
-            }
-        });
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showNotification('已添加到购物车', 'success');
+                    const cartBadge = document.querySelector('.cart-badge');
+                    if (cartBadge && data.cart_count !== undefined) {
+                        cartBadge.textContent = data.cart_count;
+                    }
+                } else {
+                    showNotification(data.message || '添加失败', 'danger');
+                }
+            })
+            .catch(error => {
+                if (error.message) {
+                    showNotification(error.message, 'danger');
+                } else {
+                    console.error('请求异常:', error);
+                    showNotification('添加失败，请稍后重试', 'danger');
+                }
+            });
     }
 
-    // 立即购买
+    // 立即购买：先加入购物车再跳转结算流程
     function buyNow() {
         const quantity = parseInt(document.getElementById('quantity').value);
         const productId = Number("{{ product.id }}");
@@ -530,34 +516,64 @@
                 quantity: quantity
             })
         })
-        .then(response => {
-             if (response.status === 401) {
-                // Not logged in
-                return response.json().then(data => {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    }
-                    throw new Error(data.message);
-                });
+            .then(response => {
+                if (response.status === 401) {
+                    return response.json().then(data => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        }
+                        throw new Error(data.message || '请先登录');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    window.location.href = "{{ url_for('order.cart') }}";
+                } else {
+                    showNotification(data.message || '购买失败', 'danger');
+                }
+            })
+            .catch(error => {
+                if (error.message) {
+                    showNotification(error.message, 'danger');
+                } else {
+                    console.error('请求异常:', error);
+                    showNotification('购买失败，请稍后重试', 'danger');
+                }
+            });
+    }
+
+    // 统一提示弹窗，便于中文文案维护
+    function showNotification(message, type = 'info') {
+        const existing = document.querySelector('.notification-toast');
+        if (existing) {
+            existing.remove();
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `notification-toast alert alert-${type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = `
+            top: 100px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 280px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: none;
+            border-radius: 8px;
+        `;
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
             }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Redirect to cart
-                window.location.href = "{{ url_for('order.cart') }}";
-            } else {
-                showNotification(data.message || '购买失败', 'danger');
-            }
-        })
-        .catch(error => {
-            if (error.message) {
-                showNotification(error.message, 'danger');
-            } else {
-                console.error('Error:', error);
-                showNotification('购买失败，请稍后重试', 'danger');
-            }
-        });
+        }, 3000);
     }
 </script>
 {% endblock %}
+
+

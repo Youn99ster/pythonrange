@@ -1,4 +1,4 @@
-{% extends "admin/admin_base.html" %}
+﻿{% extends "admin/admin_base.html" %}
 
 {% block title %}商品管理 - HackShop{% endblock %}
 {% block page_title %}商品管理{% endblock %}
@@ -12,7 +12,7 @@
                 <form class="d-flex gap-2" method="GET" action="{{ url_for('admin.products') }}">
                     <input type="text" name="keyword" value="{{ keyword or '' }}" class="form-control form-control-sm" style="width:220px" placeholder="搜索商品/分类">
                     <select name="status" class="form-select form-select-sm" style="width:120px">
-                        <option value="" {% if not status %}selected{% endif %}>全部状态</option>
+                        <option value="" {% if not status %}selected{% endif %}>鍏ㄩ儴鐘舵€?/option>
                         <option value="0" {% if status == '0' %}selected{% endif %}>上架</option>
                         <option value="1" {% if status == '1' %}selected{% endif %}>下架</option>
                     </select>
@@ -36,7 +36,7 @@
                         <th>分类</th>
                         <th>价格</th>
                         <th>库存</th>
-                        <th>状态</th>
+                        <th>鐘舵€?/th>
                         <th>操作</th>
                     </tr>
                 </thead>
@@ -75,7 +75,7 @@
                                     <form action="{{ url_for('admin.product_edit', goods_id=item.id) }}" method="POST" enctype="multipart/form-data">
                                         <div class="modal-header">
                                             <h5 class="modal-title">编辑商品</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
                                         </div>
                                         <div class="modal-body">
                                             <div class="row g-3">
@@ -96,7 +96,7 @@
                                                     <input type="number" class="form-control" name="stock" value="{{ item.stock }}" required>
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label class="form-label">状态</label>
+                                                    <label class="form-label">鐘舵€?/label>
                                                     <select class="form-select" name="status">
                                                         <option value="0" {% if item.status == '0' %}selected{% endif %}>上架</option>
                                                         <option value="1" {% if item.status != '0' %}selected{% endif %}>下架</option>
@@ -153,7 +153,7 @@
             <form action="{{ url_for('admin.product_add') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title">添加商品</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
@@ -174,7 +174,7 @@
                             <input type="number" class="form-control" name="stock" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">状态</label>
+                            <label class="form-label">鐘舵€?/label>
                             <select class="form-select" name="status">
                                 <option value="0" selected>上架</option>
                                 <option value="1">下架</option>
@@ -204,7 +204,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">批量导入商品</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
@@ -287,3 +287,4 @@ document.getElementById('batchImportForm')?.addEventListener('submit', function(
 });
 </script>
 {% endblock %}
+

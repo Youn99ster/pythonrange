@@ -1,12 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>后台管理系统 - 登录</title>
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
     <style>
         body {
@@ -83,17 +81,17 @@
     <div class="card login-card">
         <div class="login-header">
             <h2><i class="fas fa-user-shield"></i> 管理后台</h2>
-            <p class="text-muted mb-0">HackShop Administration Portal</p>
+            <p class="text-muted mb-0">HackShop 管理入口</p>
         </div>
-        
-        <!-- Flash Messages -->
+
+        <!-- 提示信息 -->
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             <div class="px-4">
             {% for category, message in messages %}
               <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
               </div>
             {% endfor %}
             </div>
@@ -130,58 +128,46 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
-    <!-- CryptoJS for AES (Vulnerability: V-Admin-AES) -->
-    <!-- Note: In a real constrained environment, we should have this locally. For now, using CDN. -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-        // ==========================================
-        // V-Admin-AES Vulnerability Implementation
-        // ==========================================
-        // 漏洞描述: 管理员密码在前端使用硬编码密钥进行AES加密
-        // 攻击场景: 攻击者查看源码获取密钥，可解密截获的流量或伪造登录请求
-        
-        const AES_KEY = "HackShopAdminKey";  // 16 bytes key
-        const AES_IV = "1234567890123456";   // 16 bytes IV
+        // V-Admin-AES 漏洞演示：前端硬编码密钥并加密管理员密码。
+        const AES_KEY = "HackShopAdminKey";
+        const AES_IV = "1234567890123456";
 
         document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const passwordInput = document.getElementById('password');
             const password = passwordInput.value;
-            
-            if (password) {
-                try {
-                    // 解析密钥和IV
-                    const key = CryptoJS.enc.Utf8.parse(AES_KEY);
-                    const iv = CryptoJS.enc.Utf8.parse(AES_IV);
 
-                    // 使用CryptoJS进行AES加密 (CBC mode, Pkcs7 padding)
-                    const encrypted = CryptoJS.AES.encrypt(password, key, {
-                        iv: iv,
-                        mode: CryptoJS.mode.CBC,
-                        padding: CryptoJS.pad.Pkcs7
-                    }).toString();
-                    
-                    // 演示目的：在控制台打印信息
-                    console.group("🔐 V-Admin-AES Debug Info");
-                    console.log("Original Password:", password);
-                    console.log("AES Key:", AES_KEY);
-                    console.log("AES IV:", AES_IV);
-                    console.log("Encrypted Payload:", encrypted);
-                    console.groupEnd();
-                    
-                    // 将明文密码替换为密文提交
-                    passwordInput.value = encrypted;
-                    
-                    // 提交表单
-                    this.submit();
-                } catch (err) {
-                    console.error("Encryption failed:", err);
-                    // 如果加密失败，可以选择阻止提交或提交明文（这里选择阻止并提示）
-                    alert("安全模块加载失败，请刷新重试");
-                }
+            if (!password) {
+                this.submit();
+                return;
+            }
+
+            try {
+                const key = CryptoJS.enc.Utf8.parse(AES_KEY);
+                const iv = CryptoJS.enc.Utf8.parse(AES_IV);
+                const encrypted = CryptoJS.AES.encrypt(password, key, {
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                }).toString();
+
+                // 靶场调试信息，故意保留以展示漏洞面。
+                console.group("V-Admin-AES 调试信息");
+                console.log("原始密码:", password);
+                console.log("AES Key:", AES_KEY);
+                console.log("AES IV:", AES_IV);
+                console.log("加密结果:", encrypted);
+                console.groupEnd();
+
+                passwordInput.value = encrypted;
+                this.submit();
+            } catch (err) {
+                console.error("加密失败:", err);
+                alert("安全模块加载失败，请刷新后重试");
             }
         });
     </script>

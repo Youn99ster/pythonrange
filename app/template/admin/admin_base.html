@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}管理员后台 - HackShop{% endblock %}</title>
+    <title>{% block title %}绠＄悊鍛樺悗鍙?- HackShop{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
@@ -64,7 +64,7 @@
             min-height: 100vh;
         }
 
-        /* 侧边栏 */
+        /* ??? */
         .sidebar {
             width: var(--sidebar-width);
             background-color: var(--dark-color);
@@ -183,7 +183,7 @@
             visibility: hidden;
         }
 
-        /* 主内容区域 */
+        /* 涓诲唴瀹瑰尯鍩?*/
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
@@ -194,7 +194,7 @@
             margin-left: var(--sidebar-collapsed-width);
         }
 
-        /* 顶部导航栏 */
+        /* 椤堕儴瀵艰埅鏍?*/
         .topbar {
             background-color: var(--white-color);
             height: var(--header-height);
@@ -495,7 +495,7 @@
             margin: 0;
         }
 
-        /* 响应式设计 */
+        /* ???? */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -546,7 +546,7 @@
             }
         }
 
-        /* 工具类 */
+        /* 宸ュ叿绫?*/
         .text-truncate {
             overflow: hidden;
             text-overflow: ellipsis;
@@ -561,7 +561,7 @@
 </head>
 <body>
     <div class="admin-layout">
-        <!-- 侧边栏 -->
+        <!-- ??? -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="{{ url_for('admin.dashboard') }}" class="sidebar-logo">
@@ -607,15 +607,15 @@
                 <li>
                     <a href="{{ url_for('admin.vouchers') }}" class="{% if request.endpoint == 'admin.vouchers' %}active{% endif %}">
                         <i class="fas fa-ticket-alt"></i>
-                        <span>储值券管理</span>
+                        <span>鍌ㄥ€煎埜绠＄悊</span>
                     </a>
                 </li>
             </ul>
         </aside>
 
-        <!-- 主内容区域 -->
+        <!-- 涓诲唴瀹瑰尯鍩?-->
         <main class="main-content" id="mainContent">
-            <!-- 顶部导航栏 -->
+            <!-- 椤堕儴瀵艰埅鏍?-->
             <header class="topbar">
                 <div class="topbar-left">
                     <h1 class="page-title">{% block page_title %}仪表盘{% endblock %}</h1>
@@ -625,7 +625,7 @@
                         <div class="user-menu" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="user-info">
                                 <div class="user-name">
-                                    {{ session.get('admin_user', '管理员') }}
+                                    {{ session.get('admin_user', '绠＄悊鍛?) }}
                                     <i class="fas fa-caret-down ms-2"></i>
                                 </div>
                             </div>
@@ -633,8 +633,7 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuDropdown">
                             <li>
                                 <a class="dropdown-item text-danger" href="{{ url_for('admin.logout') }}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>退出登录
-                                </a>
+                                    <i class="fas fa-sign-out-alt me-2"></i>閫€鍑虹櫥褰?                                </a>
                             </li>
                         </ul>
                     </div>
@@ -648,7 +647,7 @@
                     {% for category, message in messages %}
                       <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
                       </div>
                     {% endfor %}
                   {% endif %}
@@ -678,3 +677,4 @@
     {% block scripts %}{% endblock %}
 </body>
 </html>
+

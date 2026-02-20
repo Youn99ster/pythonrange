@@ -2,401 +2,192 @@
 
 {% block title %}个人中心 - HackShop{% endblock %}
 
-{% block head %}
-<style>
-    /* 个人中心布局 */
-    .profile-container {
-        display: flex;
-        gap: var(--spacing-lg);
-        margin-top: var(--spacing-lg);
-    }
-
-    /* 左侧导航栏 */
-    .profile-sidebar {
-        width: 250px;
-        flex-shrink: 0;
-        background: var(--white-color);
-        border-radius: var(--border-radius-md);
-        box-shadow: var(--box-shadow-sm);
-        padding: var(--spacing-md) 0;
-        align-self: flex-start;
-    }
-
-    .profile-nav-item {
-        display: block;
-        padding: var(--spacing-md) var(--spacing-lg);
-        color: var(--dark-color);
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border-left: 3px solid transparent;
-    }
-
-    .profile-nav-item:hover {
-        background: var(--light-color);
-        color: var(--primary-color);
-    }
-
-    .profile-nav-item.active {
-        background: rgba(44, 62, 80, 0.05);
-        color: var(--primary-color);
-        border-left-color: var(--primary-color);
-        font-weight: 600;
-    }
-
-    .profile-nav-item i {
-        margin-right: var(--spacing-sm);
-        width: 20px;
-        text-align: center;
-    }
-
-    /* 右侧内容区 */
-    .profile-content {
-        flex: 1;
-        background: var(--white-color);
-        border-radius: var(--border-radius-md);
-        box-shadow: var(--box-shadow-sm);
-        padding: var(--spacing-lg);
-        min-height: 500px;
-    }
-
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: var(--spacing-lg);
-        padding-bottom: var(--spacing-md);
-        border-bottom: 1px solid var(--light-color);
-    }
-
-    /* 资产卡片 */
-    .asset-card {
-        background: linear-gradient(135deg, var(--primary-color), #34495e);
-        color: var(--white-color);
-        padding: var(--spacing-lg);
-        border-radius: var(--border-radius-md);
-        margin-bottom: var(--spacing-lg);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .asset-info h3 {
-        margin: 0;
-        font-size: 1rem;
-        opacity: 0.9;
-    }
-
-    .asset-amount {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin: var(--spacing-sm) 0;
-    }
-
-    .asset-action {
-        background: rgba(255, 255, 255, 0.2);
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--border-radius-sm);
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-
-    .asset-action:hover {
-        background: rgba(255, 255, 255, 0.3);
-    }
-
-    /* 表单样式 */
-    .form-group {
-        margin-bottom: var(--spacing-md);
-    }
-
-    .form-label {
-        display: block;
-        margin-bottom: var(--spacing-xs);
-        font-weight: 500;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: var(--spacing-sm);
-        border: 1px solid #ddd;
-        border-radius: var(--border-radius-sm);
-    }
-
-    .btn-save {
-        background: var(--primary-color);
-        color: var(--white-color);
-        border: none;
-        padding: var(--spacing-sm) var(--spacing-lg);
-        border-radius: var(--border-radius-sm);
-        cursor: pointer;
-    }
-
-    /* 订单列表 */
-    .order-item {
-        border: 1px solid #eee;
-        border-radius: var(--border-radius-sm);
-        padding: var(--spacing-md);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .order-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: var(--spacing-sm);
-        color: #666;
-        font-size: 0.9rem;
-    }
-
-    .order-status {
-        font-weight: 600;
-        color: var(--primary-color);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container">
-    <div class="profile-container">
-        <!-- 左侧导航 -->
-        <div class="profile-sidebar">
-            <a href="{{ url_for('user.profile', section='info') }}" class="profile-nav-item {% if data.section == 'info' %}active{% endif %}">
-                <i class="fas fa-user"></i> 个人信息
-            </a>
-            <a href="{{ url_for('user.profile', section='orders') }}" class="profile-nav-item {% if data.section == 'orders' %}active{% endif %}">
-                <i class="fas fa-shopping-bag"></i> 我的订单
-            </a>
-            <a href="{{ url_for('user.profile', section='address') }}" class="profile-nav-item {% if data.section == 'address' %}active{% endif %}">
-                <i class="fas fa-map-marker-alt"></i> 收货地址
-            </a>
-            <a href="{{ url_for('user.profile', section='assets') }}" class="profile-nav-item {% if data.section == 'assets' %}active{% endif %}">
-                <i class="fas fa-wallet"></i> 我的资产
-            </a>
+<div class="row g-3">
+    <div class="col-lg-3">
+        <div class="list-group">
+            <a class="list-group-item list-group-item-action {% if data.section == 'info' %}active{% endif %}" href="{{ url_for('user.profile', section='info') }}">个人信息</a>
+            <a class="list-group-item list-group-item-action {% if data.section == 'orders' %}active{% endif %}" href="{{ url_for('user.profile', section='orders') }}">我的订单</a>
+            <a class="list-group-item list-group-item-action {% if data.section == 'address' %}active{% endif %}" href="{{ url_for('user.profile', section='address') }}">收货地址</a>
+            <a class="list-group-item list-group-item-action {% if data.section == 'assets' %}active{% endif %}" href="{{ url_for('user.profile', section='assets') }}">我的资产</a>
+        </div>
+    </div>
+    <div class="col-lg-9">
+        {% if data.section == 'orders' %}
+        <div class="card">
+            <div class="card-header"><strong>我的订单</strong></div>
+            <div class="card-body">
+                {% if data.orders %}
+                    {% for order in data.orders %}
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>订单号：{{ order.display_id }}</span>
+                            <span>{{ order.date }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div>总计：<strong>¥{{ order.total }}</strong></div>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-secondary">{{ order.status_label }}</span>
+                                <button class="btn btn-sm btn-outline-primary" onclick="showOrderDetail('{{ order.id }}')">查看详情</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted mb-0">暂无订单</p>
+                {% endif %}
+            </div>
         </div>
 
-        <!-- 右侧内容 -->
-        <div class="profile-content">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-              {% if messages %}
-                {% for category, message in messages %}
-                  <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                  </div>
-                {% endfor %}
-              {% endif %}
-            {% endwith %}
-
-            {% if data.section == 'orders' %}
-                <h2 class="section-title">我的订单</h2>
-                {% for order in data.orders %}
-                <div class="order-item">
-                    <div class="order-header">
-                        <span>订单号：{{ order.display_id }}</span>
-                        <span>{{ order.date }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-muted">总计：</span>
-                            <span class="fw-bold">¥{{ order.total }}</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="order-status">{{ order.status_label }}</span>
-                            <button class="btn btn-sm btn-outline-primary" onclick="showOrderDetail('{{ order.id }}')">查看详情</button>
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <div class="text-center text-muted py-5">暂无订单</div>
-                {% endfor %}
-
-            {% elif data.section == 'address' %}
-                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                    <h2 class="section-title mb-0 border-0 p-0">收货地址</h2>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-                        <i class="fas fa-plus"></i> 新增地址
-                    </button>
-                </div>
-
+        {% elif data.section == 'address' %}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>收货地址</strong>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">新增地址</button>
+            </div>
+            <div class="card-body">
                 {% if data.addresses %}
-                    <div class="row">
-                        {% for address in data.addresses %}
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ address.receiver }}</h5>
-                                    <p class="card-text text-muted mb-1">{{ address.phone }}</p>
-                                    <p class="card-text">{{ address.addressname }}</p>
-                                    <div class="mt-3 pt-3 border-top">
-                                        <button class="btn btn-sm btn-outline-primary me-2" 
-                                                data-id="{{ address.id }}"
-                                                data-receiver="{{ address.receiver }}"
-                                                data-phone="{{ address.phone }}"
-                                                data-addressname="{{ address.addressname }}"
-                                                data-edit-url="{{ url_for('user.edit_address', address_id=address.id) }}"
-                                                onclick="openEditModal(this)">
-                                            <i class="fas fa-edit"></i> 编辑
-                                        </button>
-                                        <form action="{{ url_for('user.delete_address', address_id=address.id) }}" method="POST" class="d-inline" onsubmit="return confirm('确定要删除这个地址吗？');">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash-alt"></i> 删除
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-map-marker-alt fa-3x mb-3 text-secondary"></i>
-                        <p>暂无收货地址</p>
-                    </div>
-                {% endif %}
-
-                <!-- Add Address Modal -->
-                <div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <form action="{{ url_for('user.add_address') }}" method="POST">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">新增收货地址</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">收货人</label>
-                                        <input type="text" class="form-control" name="receiver" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">联系电话</label>
-                                        <input type="text" class="form-control" name="phone" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">详细地址</label>
-                                        <textarea class="form-control" name="addressname" rows="3" required></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                    <button type="submit" class="btn btn-primary">保存</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Edit Address Modal -->
-                <div class="modal fade" id="editAddressModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <form id="editAddressForm" method="POST">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">编辑收货地址</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">收货人</label>
-                                        <input type="text" class="form-control" name="receiver" id="edit_receiver" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">联系电话</label>
-                                        <input type="text" class="form-control" name="phone" id="edit_phone" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">详细地址</label>
-                                        <textarea class="form-control" name="addressname" id="edit_addressname" rows="3" required></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                    <button type="submit" class="btn btn-primary">更新</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <script>
-                    function openEditModal(btn) {
-                        const id = btn.dataset.id;
-                        const receiver = btn.dataset.receiver;
-                        const phone = btn.dataset.phone;
-                        const addressname = btn.dataset.addressname;
-                        
-                        document.getElementById('editAddressForm').action = '/user/address/edit/' + id;
-                        document.getElementById('edit_receiver').value = receiver;
-                        document.getElementById('edit_phone').value = phone;
-                        document.getElementById('edit_addressname').value = addressname;
-                        var editModal = new bootstrap.Modal(document.getElementById('editAddressModal'));
-                        editModal.show();
-                    }
-                </script>
-
-            {% elif data.section == 'assets' %}
-                <h2 class="section-title">我的资产</h2>
-                <div class="row">
+                <div class="row g-3">
+                    {% for address in data.addresses %}
                     <div class="col-md-6">
-                        <div class="asset-card">
-                            <div class="asset-info">
-                                <h3>账户余额</h3>
-                                <div class="asset-amount">¥{{ data.assets.balance }}</div>
-                                <div>可用积分: {{ data.assets.points }}</div>
-                            </div>
-                            <div class="asset-action">
-                                <i class="fas fa-plus"></i> 充值
+                        <div class="border rounded p-3 h-100">
+                            <div class="fw-bold">{{ address.receiver }}</div>
+                            <div class="small text-muted">{{ address.phone }}</div>
+                            <div class="mt-2">{{ address.addressname }}</div>
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-primary me-2"
+                                        data-id="{{ address.id }}"
+                                        data-receiver="{{ address.receiver }}"
+                                        data-phone="{{ address.phone }}"
+                                        data-addressname="{{ address.addressname }}"
+                                        onclick="openEditModal(this)">编辑</button>
+                                <form action="{{ url_for('user.delete_address', address_id=address.id) }}" method="POST" class="d-inline" onsubmit="return confirm('确定删除该地址吗？');">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">删除</button>
+                                </form>
                             </div>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
-                
-                <div class="mt-4">
-                    <h3>储值券兑换</h3>
-                    <form class="mt-3" action="{{ url_for('user.voucher_redeem') }}" method="POST">
-                        <div class="form-group">
-                            <label class="form-label">输入券码</label>
-                            <div class="d-flex gap-2">
-                                <input type="text" name="code" class="form-control" placeholder="请输入16位储值券码" required>
-                                <button type="submit" class="btn-save" style="width: 120px;">立即兑换</button>
+                {% else %}
+                <p class="text-muted mb-0">暂无收货地址</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ url_for('user.add_address') }}" method="POST">
+                        <div class="modal-header">
+                            <h5 class="modal-title">新增收货地址</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">收货人</label>
+                                <input class="form-control" type="text" name="receiver" required>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">联系电话</label>
+                                <input class="form-control" type="text" name="phone" required>
+                            </div>
+                            <div>
+                                <label class="form-label">详细地址</label>
+                                <textarea class="form-control" name="addressname" rows="3" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-primary">保存</button>
                         </div>
                     </form>
                 </div>
-            {% elif data.section == 'info' %}
-                <h2 class="section-title">个人信息</h2>
-                <form action="{{ url_for('user.profile', section='info') }}" method="POST" style="max-width: 520px;">
-                    <div class="form-group">
-                        <label class="form-label">用户名</label>
-                        <input type="text" name="username" class="form-control" value="{{ data.info.username }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">邮箱</label>
-                        <input type="email" class="form-control" value="{{ data.info.email }}" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">新密码</label>
-                        <input type="password" name="password" class="form-control" placeholder="留空则不修改">
-                    </div>
-                    <button type="submit" class="btn-save">保存修改</button>
-                </form>
-            {% endif %}
+            </div>
         </div>
+
+        <div class="modal fade" id="editAddressModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="editAddressForm" method="POST">
+                        <div class="modal-header">
+                            <h5 class="modal-title">编辑收货地址</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">收货人</label>
+                                <input class="form-control" id="edit_receiver" type="text" name="receiver" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">联系电话</label>
+                                <input class="form-control" id="edit_phone" type="text" name="phone" required>
+                            </div>
+                            <div>
+                                <label class="form-label">详细地址</label>
+                                <textarea class="form-control" id="edit_addressname" name="addressname" rows="3" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-primary">更新</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% elif data.section == 'assets' %}
+        <div class="card">
+            <div class="card-header"><strong>我的资产</strong></div>
+            <div class="card-body">
+                <p class="mb-1">账户余额：<span class="fw-bold text-danger">¥{{ data.assets.balance }}</span></p>
+                <p class="mb-3">可用积分：{{ data.assets.points }}</p>
+                <form action="{{ url_for('user.voucher_redeem') }}" method="POST">
+                    <label class="form-label">兑换储值券</label>
+                    <div class="input-group">
+                        <input class="form-control" name="code" type="text" placeholder="请输入储值券码" required>
+                        <button class="btn btn-primary" type="submit">立即兑换</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="card">
+            <div class="card-header"><strong>个人信息</strong></div>
+            <div class="card-body">
+                <form action="{{ url_for('user.profile', section='info') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input class="form-control" type="text" name="username" value="{{ data.info.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">邮箱</label>
+                        <input class="form-control" type="email" value="{{ data.info.email }}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">新密码</label>
+                        <input class="form-control" type="password" name="password" placeholder="留空则不修改">
+                    </div>
+                    <button class="btn btn-primary" type="submit">保存修改</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<!-- 订单详情 Modal -->
 <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" id="orderDetailContent">
             <div class="modal-header">
                 <h5 class="modal-title">加载中...</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
             </div>
-            <div class="modal-body">
-                <div class="d-flex justify-content-center">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">加载中</span>
                 </div>
             </div>
         </div>
@@ -406,38 +197,37 @@
 
 {% block scripts %}
 <script>
-    function showOrderDetail(orderId) {
-        // 显示模态框
-        const modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
+    // 地址编辑弹窗：把当前地址数据回填到表单。
+    function openEditModal(btn) {
+        const id = btn.dataset.id;
+        document.getElementById("editAddressForm").action = "/user/address/edit/" + id;
+        document.getElementById("edit_receiver").value = btn.dataset.receiver || "";
+        document.getElementById("edit_phone").value = btn.dataset.phone || "";
+        document.getElementById("edit_addressname").value = btn.dataset.addressname || "";
+        const modal = new bootstrap.Modal(document.getElementById("editAddressModal"));
         modal.show();
-        
-        // 加载订单详情 (V-SQL-Union, V-IDOR-View, V-SSTI)
+    }
+
+    // 订单详情弹窗：按原靶场逻辑异步加载后端 HTML。
+    function showOrderDetail(orderId) {
+        const modal = new bootstrap.Modal(document.getElementById("orderDetailModal"));
+        modal.show();
         fetch(`/user/order/${orderId}`)
-            .then(response => response.text())
+            .then(r => r.text())
             .then(html => {
-                document.getElementById('orderDetailContent').innerHTML = html;
+                document.getElementById("orderDetailContent").innerHTML = html;
             })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('orderDetailContent').innerHTML = `
+            .catch(() => {
+                document.getElementById("orderDetailContent").innerHTML = `
                     <div class="modal-header">
                         <h5 class="modal-title text-danger">错误</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
                     </div>
                     <div class="modal-body">
-                        <p>无法加载订单详情</p>
+                        <p class="mb-0">订单详情加载失败，请稍后重试。</p>
                     </div>
                 `;
             });
     }
-
-    // 表单提交处理
-    // const forms = document.querySelectorAll('form');
-    // forms.forEach(form => {
-    //     form.addEventListener('submit', (e) => {
-    //         e.preventDefault();
-    //         alert('功能开发中...');
-    //     });
-    // });
 </script>
 {% endblock %}

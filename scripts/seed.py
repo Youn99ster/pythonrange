@@ -1,4 +1,9 @@
+import os
+import sys
 from datetime import datetime
+
+# Ensure `python scripts/seed.py` works both locally and in container.
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from app import app
 from app.models.db import db, Admin, User, Goods
 

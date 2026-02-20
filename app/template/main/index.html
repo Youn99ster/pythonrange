@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}HackShop - 首页{% endblock %}
+{% block title %}HackShop - 棣栭〉{% endblock %}
 
 {% block head %}
 <style>
@@ -207,16 +207,16 @@
                 <div class="filter-controls">
                     <select class="filter-select" onchange="filterProducts(this.value)">
                         <option value="default">默认排序</option>
-                        <option value="price-low">价格从低到高</option>
-                        <option value="price-high">价格从高到低</option>
-                        <option value="sales">销量优先</option>
-                        <option value="rating">评分优先</option>
+                        <option value="price-low">浠锋牸浠庝綆鍒伴珮</option>
+                        <option value="price-high">浠锋牸浠庨珮鍒颁綆</option>
+                        <option value="sales">閿€閲忎紭鍏?/option>
+                        <option value="rating">璇勫垎浼樺厛</option>
                     </select>
                     <select class="filter-select" onchange="filterByCategory(this.value)">
-                        <option value="all">全部分类</option>
-                        <option value="digital">手机数码</option>
-                        <option value="computer">电脑办公</option>
-                        <option value="entertainment">影音娱乐</option>
+                        <option value="all">鍏ㄩ儴鍒嗙被</option>
+                        <option value="digital">鎵嬫満鏁扮爜</option>
+                        <option value="computer">鐢佃剳鍔炲叕</option>
+                        <option value="entertainment">褰遍煶濞变箰</option>
                         <option value="clothing">服装鞋帽</option>
                     </select>
                 </div>
@@ -235,10 +235,10 @@
                     <div class="product-info">
                         <h3 class="product-name">{{ product.goodsname }}</h3>
                         <p class="product-description">{{ product.content }}</p>
-                        <div class="product-price">¥{{ "{:,.2f}".format(product.price) }}</div>
+                        <div class="product-price">楼{{ "{:,.2f}".format(product.price) }}</div>
                         <div class="product-actions">
                             <button class="btn-view" onclick="goToProductDetail(event, {{ product.id }}, '{{ product.price | int }}', '{{ product.mainimg }}', '{{ safe_content }}')">
-                                <i class="fas fa-eye"></i> 查看详情
+                                <i class="fas fa-eye"></i> 鏌ョ湅璇︽儏
                             </button>
                         </div>
                     </div>
@@ -255,12 +255,13 @@
 <script>
     const CART_URL = "{{ url_for('order.cart') }}";
     const ADD_TO_CART_URL = "{{ url_for('order.add_to_cart') }}";
-    
+
+    // 加入购物车并更新角标提示
     function addToCart(button) {
         const productCard = button.closest('.product-card');
         const productId = productCard.dataset.id;
         const productName = productCard.querySelector('.product-name').textContent;
-        
+
         fetch(ADD_TO_CART_URL, {
             method: 'POST',
             headers: {
@@ -273,62 +274,67 @@
                 check_exists: true
             })
         })
-        .then(response => {
-            if (response.status === 401) {
-                // Not logged in
-                return response.json().then(data => {
-                    window.location.href = data.redirect || '/auth/user/login';
-                    throw new Error('Redirecting to login');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Update Badge
+            .then(response => {
+                if (response.status === 401) {
+                    return response.json().then(data => {
+                        window.location.href = data.redirect || '/auth/user/login';
+                        throw new Error('跳转到登录页');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                    showNotification(data.message || '添加失败', 'danger');
+                    return;
+                }
+
                 const cartBadge = document.querySelector('.cart-badge');
                 if (cartBadge) {
                     if (data.cart_count !== undefined) {
                         cartBadge.textContent = data.cart_count;
                     } else {
-                         let currentCount = parseInt(cartBadge.textContent) || 0;
-                         cartBadge.textContent = currentCount + 1;
+                        const currentCount = parseInt(cartBadge.textContent) || 0;
+                        cartBadge.textContent = currentCount + 1;
                     }
-                    cartBadge.style.display = 'block'; // Ensure it's visible
+                    cartBadge.style.display = 'block';
                 }
-                
-                showNotification('"' + productName + '" 已添加到购物车', 'success');
-                
-                // Animate Icon
+
+                showNotification(`"${productName}" 已加入购物车`, 'success');
+
                 const cartIcon = document.querySelector('.cart-icon');
                 if (cartIcon) {
                     cartIcon.classList.add('pulse');
-                    setTimeout(() => { cartIcon.classList.remove('pulse'); }, 300);
+                    setTimeout(() => cartIcon.classList.remove('pulse'), 300);
                 }
-            } else {
-                showNotification(data.message || '添加失败', 'danger');
-            }
-        })
-        .catch(error => {
-            if (error.message !== 'Redirecting to login') {
-                console.error('Error:', error);
-                showNotification('系统错误，请稍后重试', 'danger');
-            }
-        });
+            })
+            .catch(error => {
+                if (error.message !== '跳转到登录页') {
+                    console.error('请求异常:', error);
+                    showNotification('系统错误，请稍后重试', 'danger');
+                }
+            });
     }
+
+    // 保存商品信息并跳转详情页
     function goToProductDetail(event, id, price, image, description) {
-        if (event) { event.stopPropagation(); }
+        if (event) {
+            event.stopPropagation();
+        }
         const productInfo = { id, price, image, description };
         try {
             localStorage.setItem('selectedProduct', JSON.stringify(productInfo));
-        } catch(e) {}
-        window.location.href = "/product-detail/" + id;
+        } catch (e) {
+            // 忽略本地存储异常，不影响跳转
+        }
+        window.location.href = `/product-detail/${id}`;
     }
+
+    // 立即购买：先入购物车，再跳转购物车页面
     function buyNow(button) {
-        // Reuse addToCart logic but with redirection
         const productCard = button.closest('.product-card');
         const productId = productCard.dataset.id;
-        
+
         fetch(ADD_TO_CART_URL, {
             method: 'POST',
             headers: {
@@ -340,74 +346,92 @@
                 quantity: 1
             })
         })
-        .then(response => {
-             if (response.status === 401) {
-                return response.json().then(data => {
-                    window.location.href = data.redirect || '/auth/user/login';
-                    throw new Error('Redirecting to login');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                window.location.href = CART_URL;
-            } else {
-                showNotification(data.message || '购买失败', 'danger');
-            }
-        })
-        .catch(error => {
-            if (error.message !== 'Redirecting to login') {
-                console.error('Error:', error);
-                showNotification('系统错误，请稍后重试', 'danger');
-            }
-        });
+            .then(response => {
+                if (response.status === 401) {
+                    return response.json().then(data => {
+                        window.location.href = data.redirect || '/auth/user/login';
+                        throw new Error('跳转到登录页');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    window.location.href = CART_URL;
+                } else {
+                    showNotification(data.message || '购买失败', 'danger');
+                }
+            })
+            .catch(error => {
+                if (error.message !== '跳转到登录页') {
+                    console.error('请求异常:', error);
+                    showNotification('系统错误，请稍后重试', 'danger');
+                }
+            });
     }
+
+    // 前端排序展示
     function filterProducts(sortType) {
         const productGrid = document.getElementById('productGrid');
         const products = Array.from(productGrid.children);
         products.sort((a, b) => {
-            switch(sortType) {
-                case 'price-low': return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
-                case 'price-high': return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
-                case 'sales': return parseInt(b.dataset.sales) - parseInt(a.dataset.sales);
-                case 'rating': return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
-                default: return 0;
+            switch (sortType) {
+                case 'price-low':
+                    return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                case 'price-high':
+                    return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+                case 'sales':
+                    return parseInt(b.dataset.sales) - parseInt(a.dataset.sales);
+                case 'rating':
+                    return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+                default:
+                    return 0;
             }
         });
         products.forEach(product => productGrid.appendChild(product));
-        showNotification('已按' + getSortTypeName(sortType) + '排序', 'info');
+        showNotification(`已按${getSortTypeName(sortType)}排序`, 'info');
     }
+
     function getSortTypeName(type) {
-        const names = { 'price-low': '价格从低到高', 'price-high': '价格从高到低', 'sales': '销量优先', 'rating': '评分优先' };
-        return names[type] || '默认排序';
+        const names = {
+            'price-low': '价格从低到高',
+            'price-high': '价格从高到低',
+            'sales': '销量从高到低',
+            'rating': '评分从高到低'
+        };
+        return names[type] || '';
     }
-    function filterByCategory(category) {
-        const products = document.querySelectorAll('.product-card');
-        products.forEach(product => {
-            product.style.display = (category === 'all' || product.dataset.category === category) ? 'block' : 'none';
-        });
-        showNotification('已筛选' + getCategoryName(category) + '商品', 'info');
-    }
-    function getCategoryName(category) {
-        const names = { 'all': '全部', 'digital': '手机数码', 'computer': '电脑办公', 'entertainment': '影音娱乐', 'clothing': '服装鞋帽' };
-        return names[category] || '全部';
-    }
+
+    // 统一弹出提示
     function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
-        notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-        document.body.appendChild(notification);
-        setTimeout(() => { if (notification.parentNode) { notification.remove(); } }, 3000);
+        const existing = document.querySelector('.notification-toast');
+        if (existing) {
+            existing.remove();
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `notification-toast alert alert-${type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = `
+            top: 100px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: none;
+            border-radius: 8px;
+        `;
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
+        `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 3000);
     }
-    document.addEventListener('DOMContentLoaded', function() {
-        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('fade-in-up'); } });
-        }, observerOptions);
-        const productCards = document.querySelectorAll('.product-card');
-        productCards.forEach(card => observer.observe(card));
-    });
 </script>
 {% endblock %}
+

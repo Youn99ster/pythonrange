@@ -9,7 +9,7 @@ from functools import wraps
 import pymysql
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
-from flask import redirect, session, url_for
+from flask import g, redirect, session, url_for
 
 from app.config import Config
 from app.models.db import Admin, MailLog, User, db
@@ -17,11 +17,24 @@ from app.utils.db import redis_client
 
 logger = logging.getLogger(__name__)
 
+ORDER_STATUS_META = {
+    "pending": ("待付款", "pending"),
+    "paid": ("已支付", "active"),
+    "shipped": ("已发货", "pending"),
+    "completed": ("已完成", "active"),
+    "cancelled": ("已取消", "inactive"),
+}
+
+
+def get_order_status_meta(status: str):
+    return ORDER_STATUS_META.get(status or "pending", ORDER_STATUS_META["pending"])
+
 
 def is_login(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if not session.get("user_id"):
+        if not session.get("user_id") or getattr(g, "user", None) is None:
+            session.clear()
             return redirect(url_for("auth.login"))
         return func(*args, **kwargs)
 

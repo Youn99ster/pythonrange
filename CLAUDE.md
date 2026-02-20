@@ -63,5 +63,5 @@ docker compose exec web python scripts/reset_lab.py
 
 ## Notes
 - This repository intentionally includes vulnerable logic for education.
-- Do not treat current behavior/configuration as production security baseline.
-- Use `docs/PRD.md` as requirements baseline.
+- Do not treat current behavior/configuration as a production security baseline.
+- Use `docs/PRD.md` as the requirements baseline.
