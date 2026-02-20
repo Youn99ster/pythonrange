@@ -35,4 +35,10 @@ with app.app_context():
 PY
 fi
 
-exec gunicorn -w 4 -k gthread -t 120 -b 0.0.0.0:8000 app:app
+python scripts/ensure_indexes.py || true
+
+WEB_WORKERS="${WEB_WORKERS:-4}"
+WEB_THREADS="${WEB_THREADS:-4}"
+WEB_TIMEOUT="${WEB_TIMEOUT:-120}"
+
+exec gunicorn -w "${WEB_WORKERS}" -k gthread --threads "${WEB_THREADS}" -t "${WEB_TIMEOUT}" -b 0.0.0.0:8000 app:app

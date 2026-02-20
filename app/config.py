@@ -17,6 +17,10 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
         "pool_recycle": 1800,
+        # 连接池参数可通过环境变量调优，避免高并发下频繁建连。
+        "pool_size": int(os.getenv("DB_POOL_SIZE", "10")),
+        "max_overflow": int(os.getenv("DB_MAX_OVERFLOW", "20")),
+        "pool_timeout": int(os.getenv("DB_POOL_TIMEOUT", "30")),
     }
     WTF_CSRF_ENABLED = False
     SECRET_KEY = os.getenv("SECRET_KEY", "hackshop-secret-key")

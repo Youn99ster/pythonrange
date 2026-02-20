@@ -1,18 +1,21 @@
+import logging
 from datetime import datetime
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, render_template_string, request, session, url_for
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.db import Address, Order, User, Voucher, db
-from app.utils.tools import get_order_status_meta, is_login
+from app.utils.tools import get_order_status_meta, is_login, query_order_detail_raw
 
+# 用户中心蓝图：地址、资产、订单与代金券能力。
 user_bp = Blueprint("user", __name__, url_prefix="/user")
+logger = logging.getLogger(__name__)
 
 
 @user_bp.route("/balance", methods=["GET"])
 @is_login
 def get_balance():
-    user_id = session.get("user_id")
-    user = db.session.get(User, user_id)
+    user = db.session.get(User, session.get("user_id"))
     if not user:
         return jsonify({"error": "用户不存在"}), 404
     return jsonify({"balance": user.balance if user.balance else 0.00})
@@ -21,26 +24,25 @@ def get_balance():
 @user_bp.route("/address/list", methods=["GET"])
 @is_login
 def address_list():
-    user_id = session.get("user_id")
-    addresses = Address.query.filter_by(user_id=user_id).all()
-
-    address_list_data = []
-    for addr in addresses:
-        address_list_data.append(
+    # 仅返回前端结算页所需字段，避免暴露无关信息。
+    addresses = Address.query.filter_by(user_id=session.get("user_id")).all()
+    return jsonify(
+        [
             {
                 "id": addr.id,
                 "receiver": addr.receiver,
                 "phone": addr.phone,
                 "addressname": addr.addressname,
             }
-        )
-
-    return jsonify(address_list_data)
+            for addr in addresses
+        ]
+    )
 
 
 @user_bp.route("/voucher/redeem", methods=["POST"])
 @is_login
 def voucher_redeem():
+    # 代金券兑换流程：校验状态 -> 入账 -> 标记已使用。
     user_id = session.get("user_id")
     code = request.form.get("code") or request.args.get("code")
     if not code:
@@ -54,15 +56,15 @@ def voucher_redeem():
     if voucher.expires_at and voucher.expires_at < datetime.now():
         return jsonify({"error": "兑换码已过期"}), 400
 
-    voucher.status = "1"
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({"error": "用户不存在"}), 404
 
-    user.balance = (user.balance or 0.0) + voucher.amount
-
+    voucher.status = "1"
     voucher.used_by = user.id
     voucher.used_at = datetime.now()
+    user.balance = (user.balance or 0.0) + voucher.amount
+
     try:
         db.session.commit()
         refreshed = db.session.get(User, user_id)
@@ -74,35 +76,29 @@ def voucher_redeem():
                 "balance": refreshed.balance,
             }
         ), 200
-    except Exception as e:
+    except SQLAlchemyError:
         db.session.rollback()
-        return jsonify({"error": f"兑换失败：{str(e)}"}), 500
+        logger.exception("voucher_redeem commit failed")
+        return jsonify({"error": "兑换失败，请稍后重试"}), 500
 
 
 @user_bp.route("/address/add", methods=["POST"])
 @is_login
 def add_address():
     user_id = session.get("user_id")
-
     receiver = request.form.get("receiver")
     phone = request.form.get("phone")
     addressname = request.form.get("addressname")
 
     if receiver and phone and addressname:
-        new_address = Address(
-            user_id=user_id,
-            receiver=receiver,
-            phone=phone,
-            addressname=addressname,
-        )
         try:
-            db.session.add(new_address)
+            db.session.add(Address(user_id=user_id, receiver=receiver, phone=phone, addressname=addressname))
             db.session.commit()
             flash("地址添加成功", "success")
-        except Exception as e:
+        except SQLAlchemyError:
             db.session.rollback()
-            flash(f"地址添加失败：{e}", "danger")
-
+            logger.exception("add_address commit failed")
+            flash("地址添加失败，请稍后重试", "danger")
     return redirect(url_for("user.profile", section="address"))
 
 
@@ -119,10 +115,10 @@ def edit_address(address_id):
         try:
             db.session.commit()
             flash("地址更新成功", "success")
-        except Exception as e:
+        except SQLAlchemyError:
             db.session.rollback()
-            flash(f"地址更新失败：{e}", "danger")
-
+            logger.exception("edit_address commit failed")
+            flash("地址更新失败，请稍后重试", "danger")
     return redirect(url_for("user.profile", section="address"))
 
 
@@ -136,10 +132,10 @@ def delete_address(address_id):
             db.session.delete(address)
             db.session.commit()
             flash("地址删除成功", "success")
-        except Exception as e:
+        except SQLAlchemyError:
             db.session.rollback()
-            flash(f"地址删除失败：{e}", "danger")
-
+            logger.exception("delete_address commit failed")
+            flash("地址删除失败，请稍后重试", "danger")
     return redirect(url_for("user.profile", section="address"))
 
 
@@ -147,7 +143,6 @@ def delete_address(address_id):
 @is_login
 def profile():
     user_id = session.get("user_id")
-
     user = db.session.get(User, user_id)
     if not user:
         return redirect(url_for("auth.login"))
@@ -156,51 +151,46 @@ def profile():
     if request.method == "POST" and section == "info":
         new_username = request.form.get("username", "").strip()
         new_password = request.form.get("password", "").strip()
-        updated = False
         if new_username:
             user.username = new_username
-            updated = True
         if new_password:
             user.password = new_password
-            updated = True
-        if updated:
+        if new_username or new_password:
             try:
                 db.session.commit()
                 flash("个人信息更新成功", "success")
-            except Exception as e:
+            except SQLAlchemyError:
                 db.session.rollback()
-                flash("更新失败：" + str(e), "danger")
+                logger.exception("profile update commit failed")
+                flash("更新失败，请稍后重试", "danger")
         return redirect(url_for("user.profile", section="info"))
 
     data = {"page": "profile", "section": section}
-
+    # 按标签页懒加载数据，避免一次请求拉取全部信息。
     if section == "orders":
         orders = Order.query.filter_by(user_id=user_id).order_by(Order.generatetime.desc()).all()
-        data["orders"] = []
-        for order in orders:
-            label, cls = get_order_status_meta(order.payment_status)
-            data["orders"].append(
-                {
-                    "id": order.id,
-                    "display_id": order.order_number,
-                    "date": order.generatetime.strftime("%Y-%m-%d") if order.generatetime else "",
-                    "total": order.total_amount,
-                    "status_label": label,
-                    "status_class": cls,
-                }
-            )
+        data["orders"] = [
+            {
+                "id": order.id,
+                "display_id": order.order_number,
+                "date": order.generatetime.strftime("%Y-%m-%d") if order.generatetime else "",
+                "total": order.total_amount,
+                "status_label": get_order_status_meta(order.payment_status)[0],
+                "status_class": get_order_status_meta(order.payment_status)[1],
+            }
+            for order in orders
+        ]
     elif section == "address":
         addresses = Address.query.filter_by(user_id=user_id).all()
-        data["addresses"] = []
-        for addr in addresses:
-            data["addresses"].append(
-                {
-                    "id": addr.id,
-                    "receiver": addr.receiver,
-                    "phone": addr.phone,
-                    "addressname": addr.addressname,
-                }
-            )
+        data["addresses"] = [
+            {
+                "id": addr.id,
+                "receiver": addr.receiver,
+                "phone": addr.phone,
+                "addressname": addr.addressname,
+            }
+            for addr in addresses
+        ]
     elif section == "assets":
         data["assets"] = {"balance": user.balance if user.balance else 0.00, "points": 0}
     elif section == "info":
@@ -212,55 +202,47 @@ def profile():
 @user_bp.route("/order/<order_id>", methods=["GET"])
 @is_login
 def order_detail(order_id):
-    from app.utils.tools import query_order_detail_raw
-
+    # 订单详情故意走原生 SQL 查询函数，用于靶场漏洞演示。
     raw = query_order_detail_raw(order_id)
     if not raw:
         return "订单不存在", 404
 
     shipping_info = ""
     if raw.get("address"):
-        a = raw["address"]
-        shipping_info = f"{a.get('receiver', '')}, {a.get('phone', '')}, {a.get('addressname', '')}"
+        address = raw["address"]
+        shipping_info = f"{address.get('receiver', '')}, {address.get('phone', '')}, {address.get('addressname', '')}"
 
-    products = []
-    for it in raw.get("items", []):
-        products.append(
-            {
-                "name": it.get("goodsname") or "Unknown",
-                "price": it.get("unit_price"),
-                "quantity": it.get("quantity"),
-            }
-        )
+    products = [
+        {
+            "name": item.get("goodsname") or "Unknown",
+            "price": item.get("unit_price"),
+            "quantity": item.get("quantity"),
+        }
+        for item in raw.get("items", [])
+    ]
 
-    o = raw["order"]
-    date_val = o.get("generatetime")
+    order_raw = raw["order"]
+    date_val = order_raw.get("generatetime")
     try:
-        date_str = (
-            date_val.strftime("%Y-%m-%d")
-            if isinstance(date_val, datetime)
-            else (str(date_val) if date_val is not None else "")
-        )
+        date_str = date_val.strftime("%Y-%m-%d") if isinstance(date_val, datetime) else (str(date_val) if date_val is not None else "")
     except Exception:
         date_str = str(date_val) if date_val is not None else ""
 
     order_data = {
-        "id": o.get("order_number"),
+        "id": order_raw.get("order_number"),
         "products": products,
-        "total": o.get("total_amount"),
+        "total": order_raw.get("total_amount"),
         "date": date_str,
         "shipping_info": shipping_info,
     }
 
-    # V-SSTI：服务端模板注入（保留用于靶场）
+    # V-SSTI: 服务端模板注入（保留用于靶场）。
     # 漏洞原因：在渲染模板前，先把用户输入拼接到模板字符串中。
     username = request.args.get("username")
     if not username:
-        user_id = session.get("user_id")
-        if user_id:
-            user = db.session.get(User, user_id)
-            if user:
-                username = user.username
+        user = db.session.get(User, session.get("user_id")) if session.get("user_id") else None
+        if user:
+            username = user.username
     if not username:
         username = "HackShop 用户"
 
@@ -288,5 +270,4 @@ def order_detail(order_id):
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
     </div>
     """
-
     return render_template_string(template_str, order=order_data)

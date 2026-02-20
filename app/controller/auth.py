@@ -1,10 +1,15 @@
-﻿from flask import Blueprint, g, jsonify, redirect, render_template, request, session, url_for
+import logging
+
+from flask import Blueprint, g, jsonify, redirect, render_template, request, session, url_for
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.db import User, db
 from app.utils.db import redis_client
-from app.utils.tools import SendResetUrl, authenticate_user, verify_email_code
+from app.utils.tools import authenticate_user, send_reset_url, verify_email_code
 
+# 认证蓝图：登录、注册、找回密码与重置密码流程。
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+logger = logging.getLogger(__name__)
 
 
 def _request_data():
@@ -16,6 +21,7 @@ def _request_data():
 
 @auth_bp.before_app_request
 def load_logged_in_user():
+    # 将当前登录用户写入 g.user，供其他路由直接读取。
     user_id = session.get("user_id")
     g.user = db.session.get(User, user_id) if user_id is not None else None
 
@@ -25,10 +31,10 @@ def login():
     if request.method == "GET":
         return render_template("auth/login.html")
 
-    request_data = _request_data()
-    email = request_data.get("email")
-    password = request_data.get("password")
-    remember = request_data.get("remember")
+    data = _request_data()
+    email = data.get("email")
+    password = data.get("password")
+    remember = data.get("remember")
     if not email or not password:
         return jsonify({"status": "error", "message": "缺少邮箱或密码"}), 400
 
@@ -36,9 +42,9 @@ def login():
     if status != 200:
         return jsonify(payload), status
 
-    remember_flag = str(remember).lower() in ("1", "true", "on", "yes")
-    session.permanent = remember_flag
+    session.permanent = str(remember).lower() in ("1", "true", "on", "yes")
     session["user_id"] = payload["user_id"]
+    # Ajax 登录返回 JSON，普通表单登录走重定向。
     if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify({"status": "ok", "message": "登录成功"}), 200
     return redirect(url_for("main.index"))
@@ -55,12 +61,12 @@ def register():
     if request.method == "GET":
         return render_template("auth/register.html", data={"page": "register page"})
 
-    request_data = _request_data()
-    username = request_data.get("username")
-    email = request_data.get("email")
-    password = request_data.get("password")
-    confirm_password = request_data.get("confirm_password")
-    email_code = request_data.get("email_code")
+    data = _request_data()
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+    confirm_password = data.get("confirm_password")
+    email_code = data.get("email_code")
 
     if not username or not email or not password or not confirm_password:
         return jsonify({"status": "error", "message": "缺少必填参数"}), 400
@@ -70,12 +76,13 @@ def register():
         return jsonify({"status": "error", "message": "邮箱验证码错误"}), 400
 
     try:
-        user = User(username=username, email=email, password=password)
-        db.session.add(user)
+        # 靶场场景保留明文密码逻辑，便于演示认证风险。
+        db.session.add(User(username=username, email=email, password=password))
         db.session.commit()
-    except Exception as e:
+    except SQLAlchemyError:
         db.session.rollback()
-        return jsonify({"status": "error", "message": f"注册失败：{e}"}), 500
+        logger.exception("register commit failed")
+        return jsonify({"status": "error", "message": "注册失败，请稍后重试"}), 500
     return jsonify({"status": "ok", "message": "注册成功"}), 200
 
 
@@ -94,10 +101,11 @@ def forgot_password():
         return jsonify({"status": "error", "message": "邮箱不存在"}), 404
 
     try:
-        SendResetUrl(email, request.host, user.id)
-    except Exception as e:
+        send_reset_url(email, request.host, user.id)
+    except Exception:
         db.session.rollback()
-        return jsonify({"status": "error", "message": f"发送重置邮件失败：{e}"}), 500
+        logger.exception("send reset url failed")
+        return jsonify({"status": "error", "message": "发送重置邮件失败，请稍后重试"}), 500
     return jsonify({"status": "ok", "message": "重置邮件已发送"}), 200
 
 
@@ -127,7 +135,8 @@ def reset_password(token):
         user.password = password
         db.session.commit()
         redis_client.delete(f"reset_token:{token}")
-    except Exception as e:
+    except SQLAlchemyError:
         db.session.rollback()
-        return jsonify({"status": "error", "message": f"密码重置失败：{e}"}), 500
+        logger.exception("reset_password commit failed")
+        return jsonify({"status": "error", "message": "密码重置失败，请稍后重试"}), 500
     return jsonify({"status": "ok", "message": "密码重置成功"}), 200

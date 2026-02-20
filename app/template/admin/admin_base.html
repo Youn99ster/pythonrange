@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}绠＄悊鍛樺悗鍙?- HackShop{% endblock %}</title>
+    <title>{% block title %}管理员后台 - HackShop{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
@@ -546,7 +546,7 @@
             }
         }
 
-        /* 宸ュ叿绫?*/
+        /* 工具类 */
         .text-truncate {
             overflow: hidden;
             text-overflow: ellipsis;
@@ -607,7 +607,7 @@
                 <li>
                     <a href="{{ url_for('admin.vouchers') }}" class="{% if request.endpoint == 'admin.vouchers' %}active{% endif %}">
                         <i class="fas fa-ticket-alt"></i>
-                        <span>鍌ㄥ€煎埜绠＄悊</span>
+                        <span>储值券管理</span>
                     </a>
                 </li>
             </ul>
@@ -625,7 +625,7 @@
                         <div class="user-menu" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="user-info">
                                 <div class="user-name">
-                                    {{ session.get('admin_user', '绠＄悊鍛?) }}
+                                    {{ session.get('admin_user', '管理员') }}
                                     <i class="fas fa-caret-down ms-2"></i>
                                 </div>
                             </div>

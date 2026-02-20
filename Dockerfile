@@ -7,13 +7,12 @@ RUN pip install --no-cache-dir \
     flask \
     Flask-SQLAlchemy \
     Flask-Migrate \
-    Flask-Redis \
-    flask-cors \
     SQLAlchemy \
     PyMySQL \
     redis \
     openpyxl \
     gunicorn \
-    pycryptodome
+    pycryptodome \
+    pytest
 EXPOSE 8000
 CMD ["sh", "start.sh"]

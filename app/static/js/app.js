@@ -1,4 +1,5 @@
 (function () {
+  // 全局 Toast 容器：统一承接页面内提示消息。
   function ensureToastContainer() {
     let c = document.getElementById("hs-toast-container");
     if (!c) {
@@ -52,6 +53,7 @@
   };
 
   function moveFlashAlertsToToasts() {
+    // 将后端 flash 消息转换为前端 toast，统一交互体验。
     const flashArea = document.getElementById("hs-flash-area");
     if (!flashArea) return;
 
@@ -65,6 +67,7 @@
   }
 
   function preventDoubleSubmit() {
+    // 防止重复提交按钮，降低重复下单/重复提交风险。
     document.querySelectorAll("form[data-hs-prevent-double-submit='1']").forEach((form) => {
       form.addEventListener("submit", function () {
         const btns = form.querySelectorAll("button[type='submit'], input[type='submit']");
