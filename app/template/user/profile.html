@@ -1,15 +1,28 @@
+<!-- profile.html - 用户个人中心
+     左侧导航切换四个标签页：个人信息 / 我的订单 / 收货地址 / 我的资产。
+     V-IDOR-Modify 漏洞入口：地址编辑/删除表单。
+     数据来源：user.profile 视图函数
+-->
 {% extends "base.html" %}
 
 {% block title %}个人中心 - HackShop{% endblock %}
 
 {% block content %}
-<div class="row g-3">
+<div class="row g-3 animate-fade-in">
     <div class="col-lg-3">
-        <div class="list-group">
-            <a class="list-group-item list-group-item-action {% if data.section == 'info' %}active{% endif %}" href="{{ url_for('user.profile', section='info') }}">个人信息</a>
-            <a class="list-group-item list-group-item-action {% if data.section == 'orders' %}active{% endif %}" href="{{ url_for('user.profile', section='orders') }}">我的订单</a>
-            <a class="list-group-item list-group-item-action {% if data.section == 'address' %}active{% endif %}" href="{{ url_for('user.profile', section='address') }}">收货地址</a>
-            <a class="list-group-item list-group-item-action {% if data.section == 'assets' %}active{% endif %}" href="{{ url_for('user.profile', section='assets') }}">我的资产</a>
+        <div class="profile-nav">
+            <a class="nav-item {% if data.section == 'info' %}active{% endif %}" href="{{ url_for('user.profile', section='info') }}">
+                <i class="fas fa-user"></i> 个人信息
+            </a>
+            <a class="nav-item {% if data.section == 'orders' %}active{% endif %}" href="{{ url_for('user.profile', section='orders') }}">
+                <i class="fas fa-box"></i> 我的订单
+            </a>
+            <a class="nav-item {% if data.section == 'address' %}active{% endif %}" href="{{ url_for('user.profile', section='address') }}">
+                <i class="fas fa-map-marker-alt"></i> 收货地址
+            </a>
+            <a class="nav-item {% if data.section == 'assets' %}active{% endif %}" href="{{ url_for('user.profile', section='assets') }}">
+                <i class="fas fa-wallet"></i> 我的资产
+            </a>
         </div>
     </div>
     <div class="col-lg-9">
@@ -47,7 +60,7 @@
             </div>
             <div class="card-body">
                 {% if data.addresses %}
-                <div class="row g-3">
+                <div class="row g-3 animate-fade-in">
                     {% for address in data.addresses %}
                     <div class="col-md-6">
                         <div class="border rounded p-3 h-100">

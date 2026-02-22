@@ -1,3 +1,13 @@
+/**
+ * HackShop 全局前端工具脚本 (app.js)
+ *
+ * 功能：
+ * 1. hsToast()       - 全局 Toast 提示（替代 alert），支持 Bootstrap 颜色分类
+ * 2. Flash → Toast   - 将后端 Flask flash 消息自动转为前端 Toast
+ * 3. 防重复提交       - 带 data-hs-prevent-double-submit="1" 的表单自动禁用提交按钮
+ *
+ * 依赖：Bootstrap 5 Toast 组件
+ */
 (function () {
   // 全局 Toast 容器：统一承接页面内提示消息。
   function ensureToastContainer() {

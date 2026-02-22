@@ -1,22 +1,32 @@
+"""
+认证蓝图（Authentication Blueprint）。
+
+功能：
+- 用户登录（邮箱 + 密码）
+- 用户注册（邮箱验证码校验）
+- 找回密码（发送重置链接到站内信）
+- 重置密码（通过令牌验证身份）
+
+相关漏洞：
+- V-Auth-DoS：登录失败 5 次后锁定 5 分钟（Redis 计数），可被利用锁定任意账号
+- V-Host-Inject：密码重置链接直接使用请求 Host 头拼接，可被篡改指向恶意域名
+
+before_app_request 钩子：
+  每次请求前根据 session['user_id'] 从数据库加载用户对象到 g.user，
+  供其他蓝图和模板直接使用。
+"""
+
 import logging
 
 from flask import Blueprint, g, jsonify, redirect, render_template, request, session, url_for
-from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.db import User, db
 from app.utils.db import redis_client
-from app.utils.tools import authenticate_user, send_reset_url, verify_email_code
+from app.utils.tools import authenticate_user, request_data, safe_commit, send_reset_url, verify_email_code
 
 # 认证蓝图：登录、注册、找回密码与重置密码流程。
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 logger = logging.getLogger(__name__)
-
-
-def _request_data():
-    # 统一读取请求参数，支持 JSON 与表单两种模式。
-    if request.is_json:
-        return request.get_json(silent=True) or {}
-    return request.form
 
 
 @auth_bp.before_app_request
@@ -31,7 +41,7 @@ def login():
     if request.method == "GET":
         return render_template("auth/login.html")
 
-    data = _request_data()
+    data = request_data()
     email = data.get("email")
     password = data.get("password")
     remember = data.get("remember")
@@ -61,7 +71,7 @@ def register():
     if request.method == "GET":
         return render_template("auth/register.html", data={"page": "register page"})
 
-    data = _request_data()
+    data = request_data()
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
@@ -75,14 +85,11 @@ def register():
     if not verify_email_code(email, email_code):
         return jsonify({"status": "error", "message": "邮箱验证码错误"}), 400
 
-    try:
-        # 靶场场景保留明文密码逻辑，便于演示认证风险。
-        db.session.add(User(username=username, email=email, password=password))
-        db.session.commit()
-    except SQLAlchemyError:
-        db.session.rollback()
-        logger.exception("register commit failed")
-        return jsonify({"status": "error", "message": "注册失败，请稍后重试"}), 500
+    # 靶场场景保留明文密码逻辑，便于演示认证风险。
+    db.session.add(User(username=username, email=email, password=password))
+    err = safe_commit("register commit failed", (jsonify({"status": "error", "message": "注册失败，请稍后重试"}), 500))
+    if err:
+        return err
     return jsonify({"status": "ok", "message": "注册成功"}), 200
 
 
@@ -91,7 +98,7 @@ def forgot_password():
     if request.method == "GET":
         return render_template("auth/forgot-password.html", data={"page": "forgot-password page"})
 
-    data = _request_data()
+    data = request_data()
     email = data.get("email")
     if not email:
         return jsonify({"status": "error", "message": "请输入邮箱"}), 400
@@ -118,7 +125,7 @@ def reset_password(token):
             data["error"] = "链接无效或已过期"
         return render_template("auth/reset-password.html", data=data)
 
-    data = _request_data()
+    data = request_data()
     password = data.get("password")
     if not password:
         return jsonify({"status": "error", "message": "请输入新密码"}), 400
@@ -131,12 +138,9 @@ def reset_password(token):
     if not user:
         return jsonify({"status": "error", "message": "用户不存在"}), 404
 
-    try:
-        user.password = password
-        db.session.commit()
-        redis_client.delete(f"reset_token:{token}")
-    except SQLAlchemyError:
-        db.session.rollback()
-        logger.exception("reset_password commit failed")
-        return jsonify({"status": "error", "message": "密码重置失败，请稍后重试"}), 500
+    user.password = password
+    err = safe_commit("reset_password commit failed", (jsonify({"status": "error", "message": "密码重置失败，请稍后重试"}), 500))
+    if err:
+        return err
+    redis_client.delete(f"reset_token:{token}")
     return jsonify({"status": "ok", "message": "密码重置成功"}), 200

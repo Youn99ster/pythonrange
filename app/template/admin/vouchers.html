@@ -1,3 +1,8 @@
+<!-- admin/vouchers.html - 储值券管理页
+     储值券列表（分页）+ 生成储值券弹窗。
+     V-Race-Condition 漏洞相关：储值券兑换时无并发锁。
+     数据来源：admin.vouchers 视图函数
+-->
 {% extends "admin/admin_base.html" %}
 
 {% block title %}储值券管理 - HackShop{% endblock %}

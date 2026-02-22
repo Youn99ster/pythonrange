@@ -1,0 +1,14 @@
+# HackShop Python 依赖清单
+# 安装方式: pip install -r requirements.txt
+
+flask                # Web 框架
+Flask-SQLAlchemy     # SQLAlchemy ORM 集成（自动依赖 SQLAlchemy）
+Flask-Migrate        # 数据库迁移（Alembic 封装）
+PyMySQL              # MySQL 驱动（纯 Python 实现）
+redis                # Redis 客户端（缓存、锁定计数）
+openpyxl             # Excel 读写（管理后台批量导入商品）
+gunicorn             # 生产级 WSGI 服务器
+pycryptodome         # AES 加解密（V-Admin-AES 漏洞演示）
+
+# ---- 开发依赖（不进入生产镜像） ----
+# pytest             # 单元测试框架（本地安装: pip install pytest）

@@ -1,15 +1,25 @@
+<!-- errors/500.html - 500 服务器内部错误页
+     展示 Request ID 和排查命令提示。
+-->
 {% extends "base.html" %}
 {% block title %}系统错误 - HackShop{% endblock %}
+
+{% block footer %}{% endblock %}
+
 {% block content %}
-<div class="card shadow-sm">
-  <div class="card-body p-4">
-    <h3 class="mb-2">500 - 系统错误</h3>
-    <p class="text-muted">服务器遇到错误。请查看 web 容器日志定位。</p>
-    <div class="alert alert-warning">
-      <div><strong>request_id：</strong><code>{{ request_id }}</code></div>
-      <div class="mt-2"><code>docker compose logs --tail=200 web</code></div>
+<div class="error-page animate-fade-in">
+    <div>
+        <div class="error-code animate-bounce-in">500</div>
+        <h2>服务器开小差了</h2>
+        <p>系统遇到了一个内部错误，请稍后再试或联系管理员。</p>
+        <div class="alert alert-warning mb-4" style="text-align:left; max-width:500px; margin:0 auto;">
+            <div><strong>Request ID：</strong><code>{{ request_id }}</code></div>
+            <div class="mt-2"><strong>排查命令：</strong><code>docker compose logs --tail=200 web</code></div>
+        </div>
+        <div class="d-flex justify-content-center gap-3">
+            <a class="btn btn-primary" href="{{ url_for('main.index') }}"><i class="fas fa-home me-2"></i>回到首页</a>
+            <button class="btn btn-outline-secondary" onclick="location.reload()"><i class="fas fa-redo me-2"></i>刷新页面</button>
+        </div>
     </div>
-    <a class="btn btn-primary" href="{{ url_for('main.index') }}">回到首页</a>
-  </div>
 </div>
 {% endblock %}

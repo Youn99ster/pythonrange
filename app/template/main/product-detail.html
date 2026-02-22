@@ -1,15 +1,13 @@
-﻿{% extends "base.html" %}
+﻿<!-- product-detail.html - 商品详情页
+     展示商品轮播图、规格参数、价格、库存，以及"加入购物车"操作。
+     数据来源：main.product_detail 视图函数
+-->
+{% extends "base.html" %}
 
 {% block title %}{{ product.goodsname }} - HackShop{% endblock %}
 
 {% block head %}
 <style>
-    /* 涓诲唴瀹瑰尯鍩?*/
-    .main-content {
-        min-height: calc(100vh - 200px);
-        padding: 2rem 0;
-    }
-
     /* 商品详情容器 */
     .product-detail-container {
         background: white;
@@ -58,63 +56,32 @@
 
     .thumbnail:hover,
     .thumbnail.active {
-        border-color: var(--primary-color);
+        border-color: var(--hs-primary);
         transform: scale(1.1);
     }
 
-    /* 商品信息区域 */
+    /* 商品信息区域 (detail page overrides) */
     .product-info h1 {
-        color: var(--primary-color);
+        color: var(--hs-primary);
         font-size: 1.8rem;
         font-weight: bold;
         margin-bottom: var(--spacing-md);
     }
 
-    .product-rating {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .stars {
-        color: var(--warning-color);
-    }
-
-    .product-price {
-        font-size: 2rem;
-        color: var(--secondary-color);
-        font-weight: bold;
-        margin-bottom: var(--spacing-md);
-    }
-
-    .original-price {
-        text-decoration: line-through;
-        color: var(--gray-color);
-        font-size: 1.2rem;
-        margin-left: var(--spacing-md);
-    }
-
-    .product-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--spacing-sm);
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .product-tag {
-        background: var(--light-color);
-        color: var(--dark-color);
-        padding: 0.25rem 0.75rem;
-        border-radius: 15px;
-        font-size: 0.9rem;
-    }
-
-    .product-description {
+    /* detail page: full description with pre-wrap */
+    .product-detail-container .product-description {
         color: var(--dark-color);
         margin-bottom: var(--spacing-xl);
         line-height: 1.8;
         white-space: pre-wrap;
+        display: block;
+        -webkit-line-clamp: unset;
+        font-size: inherit;
+    }
+
+    /* detail page: larger price */
+    .product-detail-container .product-price {
+        font-size: 2rem;
     }
 
     /* 数量选择 */
@@ -140,7 +107,7 @@
         cursor: pointer;
         font-size: 1.2rem;
         transition: background-color 0.3s ease;
-        color: var(--primary-color);
+        color: var(--hs-primary);
     }
 
     .quantity-btn:hover {
@@ -185,23 +152,23 @@
     }
 
     .btn-add-cart {
-        background: var(--primary-color);
+        background: var(--hs-primary);
         color: white;
     }
 
     .btn-add-cart:hover {
-        background: #34495e;
+        background: var(--hs-primary-hover);
         transform: translateY(-2px);
         box-shadow: var(--box-shadow-md);
     }
 
     .btn-buy-now {
-        background: var(--secondary-color);
+        background: var(--hs-accent);
         color: white;
     }
 
     .btn-buy-now:hover {
-        background: #c0392b;
+        background: var(--hs-accent-hover);
         transform: translateY(-2px);
         box-shadow: var(--box-shadow-md);
     }
@@ -254,11 +221,11 @@
     .specs-table th {
         background: #f8f9fa;
         font-weight: bold;
-        color: var(--primary-color);
+        color: var(--hs-primary);
         width: 30%;
     }
 
-    /* ???? */
+    /* 面包屑 */
     .breadcrumb {
         background: none;
         padding: 1rem 0;
@@ -271,10 +238,10 @@
     }
 
     .breadcrumb-item a:hover {
-        color: var(--primary-color);
+        color: var(--hs-primary);
     }
 
-    /* ???? */
+    /* 响应式 */
     @media (max-width: 768px) {
         .product-detail-container {
             padding: var(--spacing-md);
@@ -284,7 +251,7 @@
             font-size: 1.5rem;
         }
 
-        .product-price {
+        .product-detail-container .product-price {
             font-size: 1.5rem;
         }
 

@@ -22,7 +22,7 @@ HackShop is an immersive web security education platform built around a realisti
 - MySQL data persisted via named volume
 
 ## Data Initialization and Lab Reset
-- `scripts/seed.py`: seed products/users/vouchers/mail/sample order
+- `scripts/seed.py`: seed admin/user/demo product
 - `scripts/reset_lab.py`: reset DB/cache then reseed
 - Default seed credentials: `admin/admin123`, `alice@test.com/alice123`
 - Optional boot flags:
@@ -66,3 +66,4 @@ docker compose exec web python scripts/reset_lab.py
 - This repository intentionally includes vulnerable logic for education.
 - Do not treat current behavior/configuration as a production security baseline.
 - Use `docs/PRD.md` as the requirements baseline.
+- Use `docs/architecture.md` for vulnerability design details and system architecture.

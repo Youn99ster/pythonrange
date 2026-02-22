@@ -1,3 +1,15 @@
+/**
+ * HackShop 购物车页面交互脚本 (cart.js)
+ *
+ * 功能：
+ * - 商品勾选 / 全选 / 反选
+ * - 数量增减（+/-按钮 + 手动输入），通过 AJAX 同步后端
+ * - 单个删除 / 批量删除
+ * - 实时计算已选商品件数和总价
+ * - 结算跳转
+ *
+ * 依赖：后端 /cart/update、/cart/remove、/cart/batch_remove 接口
+ */
 document.addEventListener('DOMContentLoaded', function() {
     initializeCartPage();
 });
@@ -93,7 +105,7 @@ function initializeQuantitySelectors() {
 
 // 更新购物车商品数量
 function updateCartItemQuantity(itemId, quantity, inputElement, rowElement) {
-    fetch('/cart/update', {
+    fetch('/order/cart/update', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -123,7 +135,7 @@ function updateCartItemQuantity(itemId, quantity, inputElement, rowElement) {
 
 // 删除购物车商品
 function removeCartItem(itemId, rowElement) {
-    fetch('/cart/remove', {
+    fetch('/order/cart/remove', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -166,7 +178,7 @@ function initializeBatchOperations() {
                     return checkbox.closest('.cart-item').dataset.id;
                 });
 
-                fetch('/cart/batch_remove', {
+                fetch('/order/cart/batch_remove', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -212,7 +224,7 @@ function initializeCheckoutActions() {
                 return checkbox.closest('.cart-item').dataset.id;
             });
 
-            fetch('/cart/checkout', {
+            fetch('/order/cart/checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

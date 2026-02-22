@@ -1,3 +1,11 @@
+"""
+数据库索引补全脚本。
+
+在容器启动时（start.sh）自动执行，为高频查询字段创建索引。
+采用幂等逻辑：先查 information_schema 判断索引是否存在，不存在才创建。
+直接使用 pymysql 而非 ORM，避免依赖 Flask 应用上下文。
+"""
+
 import os
 from contextlib import closing
 
@@ -5,6 +13,7 @@ import pymysql
 
 
 def _connect():
+    """创建到 MySQL 的原生连接（autocommit=True，DDL 立即生效）。"""
     return pymysql.connect(
         host=os.getenv("MYSQL_HOST", "mysql"),
         port=int(os.getenv("MYSQL_PORT", "3306")),
@@ -16,6 +25,7 @@ def _connect():
     )
 
 
+# 索引定义列表：(表名, 索引名, CREATE INDEX DDL)
 INDEXES = [
     ("mail_logs", "idx_mail_logs_created_at", "CREATE INDEX idx_mail_logs_created_at ON mail_logs (created_at)"),
     ("mail_logs", "idx_mail_logs_receiver", "CREATE INDEX idx_mail_logs_receiver ON mail_logs (receiver)"),
@@ -37,6 +47,7 @@ INDEXES = [
 
 
 def _index_exists(cur, schema: str, table: str, index_name: str) -> bool:
+    """通过 information_schema 检查指定索引是否已存在。"""
     raw_table = table.strip("`")
     cur.execute(
         """
@@ -53,6 +64,7 @@ def _index_exists(cur, schema: str, table: str, index_name: str) -> bool:
 
 
 def ensure_indexes() -> None:
+    """遍历 INDEXES 列表，跳过已存在的索引，创建缺失的索引。"""
     schema = os.getenv("MYSQL_DB", "hackshop_db")
     with closing(_connect()) as conn, closing(conn.cursor()) as cur:
         for table, index_name, ddl in INDEXES:

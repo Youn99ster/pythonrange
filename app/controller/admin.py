@@ -1,3 +1,23 @@
+"""
+管理后台蓝图（Admin Backend Blueprint）。
+
+功能：
+- 管理员登录（AES 加密密码传输）
+- 仪表盘统计（销售额、订单数、用户数、商品数）
+- 商品增删改查 + 上下架切换
+- 订单管理（状态更新）
+- 用户列表
+- 储值券生成
+- 批量商品导入（Excel / JSON URL）
+- 系统设置
+
+相关漏洞：
+- V-Admin-AES：前端硬编码 AES 密钥加密管理员密码，可被逆向破解
+- V-SSRF：批量导入功能直接请求用户提供的 URL，未做校验
+
+依赖：openpyxl（可选）用于解析 Excel 批量导入文件
+"""
+
 import io
 import logging
 import os
@@ -11,8 +31,8 @@ from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload, selectinload
 
-from app.models.db import Admin, Goods, Order, User, Voucher, db
-from app.utils.tools import admin_auth, generate_voucher_code, get_order_status_meta, is_admin_login, unique_filename
+from app.models.db import Admin, Goods, Order, User, Voucher, db, GOODS_ON_SALE, GOODS_OFF_SALE, VOUCHER_UNUSED
+from app.utils.tools import admin_auth, generate_uuid_hex, get_order_status_meta, is_admin_login, unique_filename
 
 try:
     from openpyxl import Workbook, load_workbook
@@ -227,11 +247,9 @@ def generate_vouchers():
 
     generated = 0
     for _ in range(count):
-        code = generate_voucher_code()
-        if Voucher.query.filter_by(code=code).first():
-            continue
+        code = generate_uuid_hex()
         db.session.add(
-            Voucher(code=code, amount=amount, status="0", expires_at=datetime.now() + timedelta(days=365))
+            Voucher(code=code, amount=amount, status=VOUCHER_UNUSED, expires_at=datetime.now() + timedelta(days=365))
         )
         generated += 1
 
@@ -287,7 +305,7 @@ def product_edit(goods_id):
 @is_admin_login
 def product_toggle(goods_id):
     goods = Goods.query.get_or_404(goods_id)
-    goods.status = "1" if (goods.status or "0") == "0" else "0"
+    goods.status = GOODS_OFF_SALE if (goods.status or GOODS_ON_SALE) == GOODS_ON_SALE else GOODS_ON_SALE
     return _commit_or_flash("商品状态已更新", "product_toggle commit failed", "admin.products")
 
 

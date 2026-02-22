@@ -1,4 +1,19 @@
+# ============================================================
+# HackShop Docker Compose 编排文件
+#
+# 服务组成：
+#   mysql : MySQL 8.0 数据库，持久化到 mysql_data 卷
+#   redis : Redis 6 缓存，持久化到 redis_data 卷
+#   web   : Flask + Gunicorn 应用，依赖 mysql 和 redis 健康检查通过后启动
+#
+# 常用命令：
+#   docker compose up -d --build   # 构建并启动
+#   docker compose down -v         # 停止并删除卷（完全重置）
+#   docker compose logs -f web     # 查看 Web 日志
+# ============================================================
+
 services:
+  # ---- MySQL 数据库 ----
   mysql:
     image: mysql:8.0
     environment:
@@ -17,6 +32,7 @@ services:
       timeout: 3s
       retries: 30
 
+  # ---- Redis 缓存（登录锁定、验证码等） ----
   redis:
     image: redis:6
     ports:
@@ -29,6 +45,7 @@ services:
       timeout: 3s
       retries: 30
 
+  # ---- Web 应用（Flask + Gunicorn） ----
   web:
     build: .
     ports:

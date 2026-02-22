@@ -1,3 +1,8 @@
+<!-- base.html - HackShop 全局基础模板
+     所有前台页面继承此模板。
+     结构：导航栏（含购物车角标）→ 主内容区 → 页脚
+     可覆盖块：title / head / content / scripts / footer
+-->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -6,12 +11,12 @@
     <title>{% block title %}HackShop{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hackshop.css') }}">
     {% block head %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
         <div class="container">
-            <!-- 顶部导航：统一放置全站入口与用户操作 -->
             <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
                 <i class="fas fa-shopping-bag me-2"></i>HackShop
             </a>
@@ -21,13 +26,12 @@
 
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">首页</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}">首页</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">商品分类</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">优惠活动</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">客服中心</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.inbox' %}active{% endif %}" href="{{ url_for('main.inbox') }}">收件箱</a></li>
                 </ul>
 
-                <!-- 搜索框：输入关键词后跳转到搜索页 -->
                 <div class="d-flex me-3">
                     <input id="searchInput" class="form-control form-control-sm" type="text" placeholder="搜索商品...">
                     <button class="btn btn-sm btn-outline-secondary ms-2" type="button" onclick="performSearch()">
@@ -48,10 +52,10 @@
                             <i class="fas fa-user me-1"></i>{{ g.user.username }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url_for('user.profile') }}">个人中心</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('user.profile', section='orders') }}">我的订单</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user.profile') }}"><i class="fas fa-user-circle me-2 text-muted"></i>个人中心</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user.profile', section='orders') }}"><i class="fas fa-box me-2 text-muted"></i>我的订单</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">退出登录</a></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>退出登录</a></li>
                         </ul>
                     </div>
                     {% else %}
@@ -63,8 +67,7 @@
         </div>
     </nav>
 
-    <main class="container my-4">
-        <!-- 统一显示后端 flash 消息 -->
+    <main class="container my-4 animate-fade-in">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -78,10 +81,51 @@
         {% block content %}{% endblock %}
     </main>
 
+    {% block footer %}
+    <footer class="hs-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h5><i class="fas fa-shopping-bag me-2"></i>HackShop</h5>
+                    <p style="color: #94A3B8; font-size: 0.9rem; line-height: 1.7;">
+                        HackShop 是一个面向安全学习者的仿真电商靶场平台，内置多种常见 Web 漏洞供实战练习。
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h5>快速链接</h5>
+                    <ul>
+                        <li><a href="{{ url_for('main.index') }}">首页</a></li>
+                        <li><a href="{{ url_for('main.inbox') }}">收件箱</a></li>
+                        <li><a href="{{ url_for('order.cart') }}">购物车</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>用户服务</h5>
+                    <ul>
+                        <li><a href="{{ url_for('auth.login') }}">登录</a></li>
+                        <li><a href="{{ url_for('auth.register') }}">注册</a></li>
+                        <li><a href="{{ url_for('user.profile') }}">个人中心</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>关于平台</h5>
+                    <ul>
+                        <li><a href="#">安全声明</a></li>
+                        <li><a href="#">使用条款</a></li>
+                        <li><a href="#">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 HackShop Security Lab. 仅供安全教育用途。
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script>
-        // 搜索交互：按回车或点击按钮都触发跳转。
         function performSearch() {
             const el = document.getElementById("searchInput");
             const query = (el && el.value || "").trim();

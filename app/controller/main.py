@@ -1,3 +1,19 @@
+"""
+前台主站蓝图（Main Blueprint）。
+
+功能：
+- 首页商品展示（分页 + 分类筛选）
+- 商品详情页（轮播图、规格、推荐）
+- 搜索（关键词 + 分类 + 排序）
+- 站内信收件箱（inbox）
+- 邮箱验证码发送
+- 文件上传（商品图片等）
+- 系统初始化（/setup：创建管理员 + 导入 product.json）
+
+相关漏洞：
+- V-SSRF：管理后台批量导入拉取外部 URL 时存在 SSRF 风险
+"""
+
 import json
 import logging
 import os
@@ -5,9 +21,9 @@ import os
 from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, send_from_directory, url_for
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.models.db import Admin, Goods, GoodsImage, GoodsSpec, MailLog, db
+from app.models.db import Admin, Goods, GoodsImage, GoodsSpec, MailLog, db, GOODS_ON_SALE
 from app.utils.db import redis_client
-from app.utils.tools import generate_mailcode
+from app.utils.tools import generate_mailcode, request_data, safe_commit
 
 
 # 前台主站蓝图：首页、搜索、站内信与初始化入口。
@@ -15,15 +31,10 @@ main_bp = Blueprint("main", __name__)
 logger = logging.getLogger(__name__)
 
 
-def _request_payload():
-    # 统一兼容 JSON / form 两种提交格式，减少接口层重复判断。
-    return request.get_json(silent=True) if request.is_json else request.form
-
-
 @main_bp.route("/", methods=["GET"])
 def index():
     # 首页仅展示上架商品（status=0）。
-    return render_template("main/index.html", goods=Goods.query.filter_by(status="0").all())
+    return render_template("main/index.html", goods=Goods.query.filter_by(status=GOODS_ON_SALE).all())
 
 
 @main_bp.route("/product-detail/<int:id>", methods=["GET"])
@@ -40,12 +51,12 @@ def search(query):
     like_kw = f"%{query}%"
     product = (
         Goods.query.filter(
-            Goods.status == "0",
+            Goods.status == GOODS_ON_SALE,
             (Goods.goodsname.ilike(like_kw)) | (Goods.category.ilike(like_kw)),
         )
         .order_by(Goods.id.desc())
         .first()
-    ) or Goods.query.filter_by(status="0").order_by(Goods.id.desc()).first()
+    ) or Goods.query.filter_by(status=GOODS_ON_SALE).order_by(Goods.id.desc()).first()
 
     if not product:
         abort(404)
@@ -61,50 +72,56 @@ def inbox():
 @main_bp.route("/send_mail", methods=["POST"])
 def send_mail():
     # 注册/找回密码共用验证码发送接口。
-    payload = _request_payload()
+    payload = request_data()
     email = payload.get("email")
     if not email or not isinstance(email, str):
         return jsonify({"status": "error", "message": "邮箱参数不合法"}), 400
 
     code = generate_mailcode()
-    try:
-        redis_client.setex(f"mailcode:{email}", 600, code)
-        db.session.add(
-            MailLog(
-                subject="验证码",
-                sender="system@hackshop.local",
-                receiver=email,
-                content=f"{email}，您的验证码是：{code}。",
-            )
+    redis_client.setex(f"mailcode:{email}", 600, code)
+    db.session.add(
+        MailLog(
+            subject="验证码",
+            sender="system@hackshop.local",
+            receiver=email,
+            content=f"{email}，您的验证码是：{code}。",
         )
-        db.session.commit()
-    except SQLAlchemyError:
-        db.session.rollback()
-        logger.exception("send_mail commit failed")
-        return jsonify({"status": "error", "message": "验证码发送失败，请稍后重试"}), 500
+    )
+    err = safe_commit("send_mail commit failed", (jsonify({"status": "error", "message": "验证码发送失败，请稍后重试"}), 500))
+    if err:
+        return err
     return jsonify({"status": "ok", "message": "验证码已发送", "email": email}), 200
 
 
 @main_bp.route("/api/mails", methods=["GET"])
 def api_mails():
     since_id = request.args.get("since_id", type=int)
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 50, type=int)
+    per_page = min(per_page, 100)  # 限制单次最大返回量
+
     query = MailLog.query
     if since_id:
         query = query.filter(MailLog.id > since_id)
-    mails = query.order_by(MailLog.created_at.desc()).all()
+    pagination = query.order_by(MailLog.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
     return jsonify(
-        [
-            {
-                "id": m.id,
-                "subject": m.subject,
-                "sender": m.sender,
-                "receiver": m.receiver,
-                "content": m.content,
-                "created_at": m.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                "is_read": m.is_read,
-            }
-            for m in mails
-        ]
+        {
+            "items": [
+                {
+                    "id": m.id,
+                    "subject": m.subject,
+                    "sender": m.sender,
+                    "receiver": m.receiver,
+                    "content": m.content,
+                    "created_at": m.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    "is_read": m.is_read,
+                }
+                for m in pagination.items
+            ],
+            "total": pagination.total,
+            "page": pagination.page,
+            "pages": pagination.pages,
+        }
     )
 
 
@@ -118,12 +135,9 @@ def api_mail_read(mail_id: int):
         return jsonify({"status": "error", "message": "邮件不存在"}), 404
 
     mail.is_read = is_read
-    try:
-        db.session.commit()
-    except SQLAlchemyError:
-        db.session.rollback()
-        logger.exception("api_mail_read commit failed")
-        return jsonify({"status": "error", "message": "更新邮件状态失败"}), 500
+    err = safe_commit("api_mail_read commit failed", (jsonify({"status": "error", "message": "更新邮件状态失败"}), 500))
+    if err:
+        return err
     return jsonify({"status": "ok", "id": mail.id, "is_read": mail.is_read})
 
 

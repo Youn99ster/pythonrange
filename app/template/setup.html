@@ -1,3 +1,8 @@
+<!-- setup.html - 系统初始化页
+     首次部署时访问 /setup 执行初始化：创建管理员账号 + 导入商品数据。
+     幂等操作，已初始化后按钮禁用。
+     数据来源：main.setup 视图函数
+-->
 {% extends "base.html" %}
 
 {% block title %}系统初始化 - HackShop{% endblock %}

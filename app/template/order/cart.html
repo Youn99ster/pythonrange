@@ -1,8 +1,163 @@
+<!-- cart.html - 购物车页面
+     展示用户购物车商品列表，支持勾选、数量调整、删除、批量删除。
+     右侧为订单摘要（已选件数、总价）和结算按钮。
+     数据来源：order.cart 视图函数 + AJAX 接口
+-->
 {% extends "base.html" %}
 
 {% block title %}购物车 - HackShop{% endblock %}
 
+{% block head %}
+<style>
+    /* Cart item row hover effect */
+    .cart-item-row {
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        border-radius: 8px;
+        margin: 0 -0.5rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    .cart-item-row:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.04);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    .cart-item-row:last-child {
+        border-bottom: none !important;
+    }
+
+    /* Quantity buttons */
+    .cart-quantity-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .cart-quantity-btn:hover {
+        background-color: var(--bs-primary);
+        color: #fff;
+        border-color: var(--bs-primary);
+    }
+
+    /* Sticky summary sidebar */
+    .cart-summary {
+        position: sticky;
+        top: 90px;
+    }
+    .cart-summary .card {
+        border: none;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        border-radius: 12px;
+    }
+    .cart-summary .card-header {
+        background: linear-gradient(135deg, var(--bs-primary), #6f42c1);
+        color: #fff;
+        border-radius: 12px 12px 0 0 !important;
+        padding: 1rem 1.25rem;
+    }
+    .cart-summary .card-body {
+        padding: 1.25rem;
+    }
+
+    /* Custom checkbox styling */
+    .cart-item-checkbox,
+    #selectAllTop {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--bs-primary);
+        border-radius: 4px;
+        vertical-align: middle;
+    }
+
+    /* Cart card styling */
+    #cartContent .col-lg-8 > .card {
+        border: none;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    #cartContent .col-lg-8 > .card > .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #eee;
+        padding: 0.85rem 1.25rem;
+    }
+
+    /* Cart item image */
+    .cart-item-row img {
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+    }
+    .cart-item-row img:hover {
+        transform: scale(1.05);
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+    }
+    .empty-state-icon {
+        font-size: 5rem;
+        color: #dee2e6;
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+    .empty-state h4 {
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    .empty-state p {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Fade-in animation */
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Float animation for empty state icon */
+    .animate-float {
+        animation: floatUpDown 3s ease-in-out infinite;
+    }
+    @keyframes floatUpDown {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-12px); }
+    }
+
+    /* Subtotal highlight */
+    .cart-item-row .fw-bold {
+        color: var(--bs-danger);
+    }
+
+    /* Checkout button enhancement */
+    .cart-summary .btn-primary {
+        padding: 0.65rem 1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .cart-summary .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.35);
+    }
+    .cart-summary .btn-outline-secondary {
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<div class="main-content animate-fade-in">
 <div class="mb-3 d-flex justify-content-between align-items-center">
     <h2 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>我的购物车</h2>
 </div>
@@ -22,7 +177,7 @@
             <div class="card-body" id="cartItemsContainer"></div>
         </div>
     </div>
-    <div class="col-lg-4">
+    <div class="col-lg-4 cart-summary">
         <div class="card">
             <div class="card-header"><strong>订单摘要</strong></div>
             <div class="card-body">
@@ -40,11 +195,12 @@
     </div>
 </div>
 
-<div id="emptyCart" class="text-center py-5 d-none">
-    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+<div id="emptyCart" class="empty-state d-none animate-fade-in">
+    <i class="fas fa-shopping-cart empty-state-icon animate-float"></i>
     <h4>购物车还是空的</h4>
-    <p class="text-muted">快去挑选喜欢的商品吧。</p>
-    <a href="{{ url_for('main.index') }}" class="btn btn-primary">去逛逛</a>
+    <p>快去挑选喜欢的商品吧</p>
+    <a href="{{ url_for('main.index') }}" class="btn btn-primary"><i class="fas fa-store me-2"></i>去逛逛</a>
+</div>
 </div>
 {% endblock %}
 
@@ -75,7 +231,7 @@
         cartItems.forEach(item => {
             const subtotal = item.quantity * item.goods.price;
             container.insertAdjacentHTML("beforeend", `
-                <div class="row align-items-center border-bottom py-3" data-id="${item.id}">
+                <div class="row align-items-center border-bottom py-3 cart-item-row" data-id="${item.id}">
                     <div class="col-1 text-center">
                         <input type="checkbox" class="cart-item-checkbox" ${item.selected ? "checked" : ""} onchange="toggleItem('${item.id}', this.checked)">
                     </div>
@@ -89,9 +245,9 @@
                     <div class="col-2 text-center">¥${item.goods.price.toFixed(2)}</div>
                     <div class="col-2 text-center">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-secondary" onclick="updateQuantity('${item.id}', -1)">-</button>
-                            <button class="btn btn-light" disabled>${item.quantity}</button>
-                            <button class="btn btn-outline-secondary" onclick="updateQuantity('${item.id}', 1)">+</button>
+                            <button class="btn btn-outline-secondary cart-quantity-btn" onclick="updateQuantity('${item.id}', -1)">-</button>
+                            <button class="btn btn-light cart-quantity-btn" disabled>${item.quantity}</button>
+                            <button class="btn btn-outline-secondary cart-quantity-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
                         </div>
                     </div>
                     <div class="col-1 text-center fw-bold">¥${subtotal.toFixed(2)}</div>

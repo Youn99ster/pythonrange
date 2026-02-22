@@ -37,21 +37,22 @@
 - 应用日志：控制台 + `logs/app.log`（轮转）
 
 ## 6. 实验脚本
-- `scripts/seed.py`：导入商品与实验基础数据
+- `scripts/seed.py`：导入管理员、测试用户与演示商品
 - `scripts/reset_lab.py`：清理业务数据与缓存后重建数据
+- `scripts/ensure_indexes.py`：创建数据库索引（启动时自动执行）
 - 默认种子账号：`admin/admin123`、`alice@test.com/alice123`
 
 ## 7. 漏洞实现映射（摘要）
 - V-Auth-DoS：`authenticate_user`
-- V-Host-Inject：`SendResetUrl`
+- V-Host-Inject：`send_reset_url`
 - V-CSRF-Pay：`order.checkout`
-- V-Race-Condition：`user.voucher_redeem`
+- V-Race-Condition：`user.voucher_redeem` / `order.checkout`
 - V-IDOR-Modify：`user.edit_address` / `user.delete_address`
 - V-IDOR-View / V-SQL-Union / V-SSTI：`user.order_detail` 相关链路
 - V-SSRF：`admin.products_batch_import`
 - V-Admin-AES：`admin.login` 前后端链路
 
-## 8. 代码质量与本次对齐
+## 8. 代码质量治理记录
 - `auth` 控制器用户可见消息已统一规范
 - `auth` 相关模板（注册/找回/重置）已重建为稳定文本版本
 - 管理端与主站关键模板已完成文案与注释整理

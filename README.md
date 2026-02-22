@@ -1,6 +1,6 @@
-﻿# pythonrange
+﻿# HackShop
 
-pythonrange 是一个以仿真电商业务为核心的 Web 安全教学靶场。
+HackShop 是一个以仿真电商业务为核心的 Web 安全教学靶场。
 
 项目目标不是“漏洞题列表”，而是在真实业务流（注册、下单、支付、后台管理）中完成漏洞发现与利用。
 
@@ -55,6 +55,10 @@ docker compose logs -f web
 - 创建/更新管理员账号
 - 导入 `product.json` 商品数据
 
+默认种子账号：
+- 管理员：`admin` / `admin123`
+- 普通用户：`alice@test.com` / `alice123`（余额 9999）
+
 ## 容器内维护命令
 
 ### 1. 重置实验环境（清库 + 重新种子）
@@ -93,16 +97,19 @@ app/
 scripts/
   seed.py
   reset_lab.py
+  ensure_indexes.py
 docs/
   PRD.md
   tech-spec.md
   ui-ux.md
+  architecture.md
 start.sh
 docker-compose.yml
 Dockerfile
+requirements.txt
 ```
 
-## 运行口径
+## 运行方式
 - 官方支持与验收路径：仅 Docker Compose。
 - 本地 Python 直接运行仅用于开发调试，不作为靶场交付与验收方式。
 

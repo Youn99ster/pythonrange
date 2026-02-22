@@ -1,4 +1,9 @@
-﻿{% extends "admin/admin_base.html" %}
+﻿<!-- admin/products.html - 商品管理页
+     商品列表（搜索/筛选）、添加商品、编辑商品、上下架、删除、批量导入。
+     V-SSRF 漏洞入口：批量导入通过 URL 拉取外部 JSON/Excel。
+     数据来源：admin.products 视图函数
+-->
+{% extends "admin/admin_base.html" %}
 
 {% block title %}商品管理 - HackShop{% endblock %}
 {% block page_title %}商品管理{% endblock %}

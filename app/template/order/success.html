@@ -1,17 +1,22 @@
+<!-- success.html - 支付成功页
+     展示订单编号、支付金额、支付方式和时间。
+     包含彩纸动画效果（confetti）。
+     数据来源：order.checkout POST 成功后重定向
+-->
 {% extends "base.html" %}
 
 {% block title %}支付成功 - HackShop{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-5 animate-fade-in">
     <div class="text-center">
         <div class="mb-4">
-            <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+            <i class="fas fa-check-circle success-icon" style="font-size: 5rem;"></i>
         </div>
         <h2 class="mb-3 text-primary">支付成功！</h2>
         <p class="text-muted mb-5">感谢您的购买，您的订单已成功处理。</p>
         
-        <div class="card mx-auto mb-4" style="max-width: 600px;">
+        <div class="card mx-auto mb-4 shadow-sm" style="max-width: 600px; border-radius: 12px;">
             <div class="card-body text-start">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="fw-bold">订单编号：</span>
@@ -38,4 +43,23 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Simple confetti effect
+    document.addEventListener('DOMContentLoaded', function() {
+        const colors = ['#4A6CF7', '#FF6B35', '#10B981', '#F59E0B', '#EF4444'];
+        for (let i = 0; i < 30; i++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = Math.random() * 100 + 'vw';
+            piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            piece.style.animationDelay = Math.random() * 2 + 's';
+            piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+            document.body.appendChild(piece);
+            setTimeout(() => piece.remove(), 5000);
+        }
+    });
+</script>
 {% endblock %}

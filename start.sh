@@ -1,6 +1,18 @@
 #!/bin/sh
+# ============================================================
+# HackShop 容器启动入口脚本
+#
+# 执行流程：
+#   1. 等待 MySQL 就绪（最多 90 秒轮询）
+#   2. 执行数据库迁移（有 migrations 目录）或直接建表
+#   3. 可选：RESET_LAB_ON_BOOT=1 重置数据库 + 缓存
+#   4. 可选：SEED_ON_BOOT=1 播种初始数据
+#   5. 补全数据库索引
+#   6. 启动 Gunicorn WSGI 服务器
+# ============================================================
 set -eu
 
+# ---- 第一步：等待 MySQL 可连接 ----
 python - <<'PY'
 import os, time
 import pymysql
@@ -23,6 +35,7 @@ else:
 PY
 
 
+# ---- 第二步：数据库迁移或建表 ----
 if [ -d "migrations" ]; then
   flask --app app db upgrade
 else
@@ -35,8 +48,22 @@ with app.app_context():
 PY
 fi
 
+# ---- 第三步：可选的靶场重置 ----
+if [ "${RESET_LAB_ON_BOOT:-0}" = "1" ]; then
+  echo "RESET_LAB_ON_BOOT: resetting database and cache..."
+  python scripts/reset_lab.py
+fi
+
+# ---- 第四步：可选的数据播种 ----
+if [ "${SEED_ON_BOOT:-0}" = "1" ]; then
+  echo "SEED_ON_BOOT: seeding initial data..."
+  python scripts/seed.py
+fi
+
+# ---- 第五步：补全数据库索引（幂等） ----
 python scripts/ensure_indexes.py || true
 
+# ---- 第六步：启动 Gunicorn（gthread 模式） ----
 WEB_WORKERS="${WEB_WORKERS:-4}"
 WEB_THREADS="${WEB_THREADS:-4}"
 WEB_TIMEOUT="${WEB_TIMEOUT:-120}"

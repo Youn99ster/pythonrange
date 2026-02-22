@@ -1,9 +1,32 @@
+<!-- checkout.html - 订单确认 / 支付页
+     三步流程：选择商品 → 确认订单（当前页）→ 支付完成。
+     包含：收货地址选择、订单商品明细、支付方式选择（余额支付）。
+     V-CSRF-Pay 漏洞入口：支付表单无 CSRF Token。
+     数据来源：order.checkout 视图函数
+-->
 {% extends "base.html" %}
 
 {% block title %}订单确认 - HackShop{% endblock %}
 
 {% block content %}
-<div class="card">
+<div class="checkout-steps animate-fade-in">
+    <div class="checkout-step completed">
+        <span class="checkout-step-number"><i class="fas fa-check"></i></span>
+        <span>选择商品</span>
+    </div>
+    <div class="checkout-step-divider"></div>
+    <div class="checkout-step active">
+        <span class="checkout-step-number">2</span>
+        <span>确认订单</span>
+    </div>
+    <div class="checkout-step-divider"></div>
+    <div class="checkout-step">
+        <span class="checkout-step-number">3</span>
+        <span>支付完成</span>
+    </div>
+</div>
+
+<div class="card animate-fade-in">
     <div class="card-header bg-primary text-white">
         <h3 class="mb-0">订单确认</h3>
         <small>请确认收货地址、商品信息和支付方式</small>
@@ -49,7 +72,8 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card opacity-50">
+                <div class="card payment-disabled">
+                    <span class="payment-disabled-tag">即将开放</span>
                     <div class="card-body">
                         <div class="fw-bold"><i class="fab fa-weixin text-success me-1"></i>微信支付</div>
                         <div class="small text-muted">暂不可用</div>
@@ -57,7 +81,8 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card opacity-50">
+                <div class="card payment-disabled">
+                    <span class="payment-disabled-tag">即将开放</span>
                     <div class="card-body">
                         <div class="fw-bold"><i class="fab fa-alipay text-primary me-1"></i>支付宝</div>
                         <div class="small text-muted">暂不可用</div>

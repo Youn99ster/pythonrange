@@ -1,15 +1,45 @@
+"""
+用户中心蓝图（User Center Blueprint）。
+
+功能：
+- 余额查询（/user/balance）
+- 收货地址增删改查（CRUD）
+- 储值券兑换（/user/redeem）
+- 个人中心页面（信息 / 订单 / 地址 / 资产 四个标签页）
+- 订单详情查看（/user/order/<id>）
+
+相关漏洞：
+- V-IDOR-Modify：编辑/删除地址时未校验归属关系，可越权操作他人地址
+- V-SQL-Union：订单详情使用原生 SQL 拼接 order_id，存在 SQL 注入
+- V-SSTI：订单详情通过 render_template_string 渲染用户输入，存在服务端模板注入
+"""
+
 import logging
 from datetime import datetime
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, render_template_string, request, session, url_for
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.models.db import Address, Order, User, Voucher, db
+from app.models.db import Address, Order, User, Voucher, db, VOUCHER_UNUSED, VOUCHER_USED
 from app.utils.tools import get_order_status_meta, is_login, query_order_detail_raw
 
 # 用户中心蓝图：地址、资产、订单与代金券能力。
 user_bp = Blueprint("user", __name__, url_prefix="/user")
 logger = logging.getLogger(__name__)
+
+
+def _commit_or_flash(success_msg: str, error_log: str):
+    """统一 DB 提交 + flash 提示，减少重复 try/except 样板代码。"""
+    try:
+        db.session.commit()
+        flash(success_msg, "success")
+    except SQLAlchemyError:
+        db.session.rollback()
+        logger.exception(error_log)
+        flash("操作失败，请稍后重试", "danger")
+
+
+_PROFILE_ENDPOINT = "user.profile"
 
 
 @user_bp.route("/balance", methods=["GET"])
@@ -51,7 +81,7 @@ def voucher_redeem():
     voucher = Voucher.query.filter_by(code=code).first()
     if not voucher:
         return jsonify({"error": "兑换码不存在"}), 404
-    if voucher.status != "0":
+    if voucher.status != VOUCHER_UNUSED:
         return jsonify({"error": "兑换码已使用或不可用"}), 409
     if voucher.expires_at and voucher.expires_at < datetime.now():
         return jsonify({"error": "兑换码已过期"}), 400
@@ -60,7 +90,7 @@ def voucher_redeem():
     if not user:
         return jsonify({"error": "用户不存在"}), 404
 
-    voucher.status = "1"
+    voucher.status = VOUCHER_USED
     voucher.used_by = user.id
     voucher.used_at = datetime.now()
     user.balance = (user.balance or 0.0) + voucher.amount
@@ -91,15 +121,9 @@ def add_address():
     addressname = request.form.get("addressname")
 
     if receiver and phone and addressname:
-        try:
-            db.session.add(Address(user_id=user_id, receiver=receiver, phone=phone, addressname=addressname))
-            db.session.commit()
-            flash("地址添加成功", "success")
-        except SQLAlchemyError:
-            db.session.rollback()
-            logger.exception("add_address commit failed")
-            flash("地址添加失败，请稍后重试", "danger")
-    return redirect(url_for("user.profile", section="address"))
+        db.session.add(Address(user_id=user_id, receiver=receiver, phone=phone, addressname=addressname))
+        _commit_or_flash("地址添加成功", "add_address commit failed")
+    return redirect(url_for(_PROFILE_ENDPOINT, section="address"))
 
 
 @user_bp.route("/address/edit/<int:address_id>", methods=["POST"])
@@ -112,14 +136,8 @@ def edit_address(address_id):
         address.receiver = request.form.get("receiver")
         address.phone = request.form.get("phone")
         address.addressname = request.form.get("addressname")
-        try:
-            db.session.commit()
-            flash("地址更新成功", "success")
-        except SQLAlchemyError:
-            db.session.rollback()
-            logger.exception("edit_address commit failed")
-            flash("地址更新失败，请稍后重试", "danger")
-    return redirect(url_for("user.profile", section="address"))
+        _commit_or_flash("地址更新成功", "edit_address commit failed")
+    return redirect(url_for(_PROFILE_ENDPOINT, section="address"))
 
 
 @user_bp.route("/address/delete/<int:address_id>", methods=["POST"])
@@ -128,15 +146,38 @@ def delete_address(address_id):
     address = db.session.get(Address, address_id)
     # IDOR Vulnerability: No ownership check
     if address:
-        try:
-            db.session.delete(address)
-            db.session.commit()
-            flash("地址删除成功", "success")
-        except SQLAlchemyError:
-            db.session.rollback()
-            logger.exception("delete_address commit failed")
-            flash("地址删除失败，请稍后重试", "danger")
-    return redirect(url_for("user.profile", section="address"))
+        db.session.delete(address)
+        _commit_or_flash("地址删除成功", "delete_address commit failed")
+    return redirect(url_for(_PROFILE_ENDPOINT, section="address"))
+
+
+def _load_section_data(section: str, user_id: int, user) -> dict:
+    """按标签页懒加载个人中心数据，避免一次请求拉取全部信息。"""
+    data = {"page": "profile", "section": section}
+    if section == "orders":
+        orders = Order.query.filter_by(user_id=user_id).order_by(Order.generatetime.desc()).all()
+        data["orders"] = [
+            {
+                "id": order.id,
+                "display_id": order.order_number,
+                "date": order.generatetime.strftime("%Y-%m-%d") if order.generatetime else "",
+                "total": order.total_amount,
+                "status_label": get_order_status_meta(order.payment_status)[0],
+                "status_class": get_order_status_meta(order.payment_status)[1],
+            }
+            for order in orders
+        ]
+    elif section == "address":
+        addresses = Address.query.filter_by(user_id=user_id).all()
+        data["addresses"] = [
+            {"id": addr.id, "receiver": addr.receiver, "phone": addr.phone, "addressname": addr.addressname}
+            for addr in addresses
+        ]
+    elif section == "assets":
+        data["assets"] = {"balance": user.balance or 0.00, "points": 0}
+    elif section == "info":
+        data["info"] = {"username": user.username, "email": user.email}
+    return data
 
 
 @user_bp.route("/profile", methods=["GET", "POST"])
@@ -156,47 +197,10 @@ def profile():
         if new_password:
             user.password = new_password
         if new_username or new_password:
-            try:
-                db.session.commit()
-                flash("个人信息更新成功", "success")
-            except SQLAlchemyError:
-                db.session.rollback()
-                logger.exception("profile update commit failed")
-                flash("更新失败，请稍后重试", "danger")
-        return redirect(url_for("user.profile", section="info"))
+            _commit_or_flash("个人信息更新成功", "profile update commit failed")
+        return redirect(url_for(_PROFILE_ENDPOINT, section="info"))
 
-    data = {"page": "profile", "section": section}
-    # 按标签页懒加载数据，避免一次请求拉取全部信息。
-    if section == "orders":
-        orders = Order.query.filter_by(user_id=user_id).order_by(Order.generatetime.desc()).all()
-        data["orders"] = [
-            {
-                "id": order.id,
-                "display_id": order.order_number,
-                "date": order.generatetime.strftime("%Y-%m-%d") if order.generatetime else "",
-                "total": order.total_amount,
-                "status_label": get_order_status_meta(order.payment_status)[0],
-                "status_class": get_order_status_meta(order.payment_status)[1],
-            }
-            for order in orders
-        ]
-    elif section == "address":
-        addresses = Address.query.filter_by(user_id=user_id).all()
-        data["addresses"] = [
-            {
-                "id": addr.id,
-                "receiver": addr.receiver,
-                "phone": addr.phone,
-                "addressname": addr.addressname,
-            }
-            for addr in addresses
-        ]
-    elif section == "assets":
-        data["assets"] = {"balance": user.balance if user.balance else 0.00, "points": 0}
-    elif section == "info":
-        data["info"] = {"username": user.username, "email": user.email}
-
-    return render_template("user/profile.html", data=data)
+    return render_template("user/profile.html", data=_load_section_data(section, user_id, user))
 
 
 @user_bp.route("/order/<order_id>", methods=["GET"])
@@ -223,10 +227,12 @@ def order_detail(order_id):
 
     order_raw = raw["order"]
     date_val = order_raw.get("generatetime")
-    try:
-        date_str = date_val.strftime("%Y-%m-%d") if isinstance(date_val, datetime) else (str(date_val) if date_val is not None else "")
-    except Exception:
-        date_str = str(date_val) if date_val is not None else ""
+    if isinstance(date_val, datetime):
+        date_str = date_val.strftime("%Y-%m-%d")
+    elif date_val is not None:
+        date_str = str(date_val)
+    else:
+        date_str = ""
 
     order_data = {
         "id": order_raw.get("order_number"),
@@ -240,7 +246,8 @@ def order_detail(order_id):
     # 漏洞原因：在渲染模板前，先把用户输入拼接到模板字符串中。
     username = request.args.get("username")
     if not username:
-        user = db.session.get(User, session.get("user_id")) if session.get("user_id") else None
+        user_id = session.get("user_id")
+        user = db.session.get(User, user_id) if user_id else None
         if user:
             username = user.username
     if not username:

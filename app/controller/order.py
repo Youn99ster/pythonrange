@@ -1,3 +1,21 @@
+"""
+订单蓝图（Order Blueprint）。
+
+功能：
+- 购物车操作：添加、减少、更新数量、单个移除、批量移除
+- 购物车结算：选中商品 → 创建待支付订单
+- 订单支付：余额扣款 + 库存扣减
+
+相关漏洞：
+- V-CSRF-Pay：支付表单未携带 CSRF Token，可被跨站伪造支付请求
+- V-Race-Condition：扣减库存时未加锁，并发请求可导致超卖
+- V-IDOR-View：支付接口仅按订单 ID 查询，未校验当前用户是否为订单所有者
+
+app_context_processor：
+  将购物车商品数量 cart_count 注入所有模板上下文，
+  使导航栏可直接显示购物车角标。
+"""
+
 import logging
 from datetime import datetime
 from uuid import uuid4
@@ -7,7 +25,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
 
 from app.models.db import CartItem, Goods, Order, OrderItem, db
-from app.utils.tools import generate_orderid, is_login
+from app.utils.tools import generate_uuid_hex, is_login
 
 
 # 订单蓝图：购物车、创建订单与支付流程。
@@ -237,7 +255,7 @@ def checkout_cart():
     if not cart_items:
         return jsonify({"success": False, "message": "商品无效或已失效"}), 400
 
-    order_id = generate_orderid()
+    order_id = generate_uuid_hex()
     new_order = Order(
         id=order_id,
         order_number=_generate_order_number(g.user.id),

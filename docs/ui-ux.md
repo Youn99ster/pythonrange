@@ -14,6 +14,9 @@
 
 ## 3. 页面清单（当前实现）
 
+### 公共
+- 初始化：`setup.html`
+
 ### 用户侧
 - 首页：`main/index.html`
 - 商品详情：`main/product-detail.html`
@@ -27,6 +30,10 @@
 - 支付成功：`order/success.html`
 - 个人中心：`user/profile.html`
 - 模拟收件箱：`main/inbox.html`
+
+### 错误页
+- 404：`errors/404.html`
+- 500：`errors/500.html`
 
 ### 管理侧
 - 登录：`admin/login.html`
@@ -56,8 +63,8 @@
 - 演示说明仅在文档和课程材料中呈现
 
 ## 7. 完成状态
-- UI 任务总计：17
-- 已完成：17
+- UI 任务总计：22
+- 已完成：22
 - 完成率：100%
 - 本轮补充：关键模板交互文案与提示反馈整理
 

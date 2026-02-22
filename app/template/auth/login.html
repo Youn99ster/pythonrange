@@ -1,119 +1,19 @@
+<!-- login.html - 用户登录页
+     邮箱 + 密码登录表单，AJAX 提交。
+     V-Auth-DoS 漏洞入口：连续失败 5 次触发账号锁定。
+     数据来源：auth.login 视图函数
+-->
 {% extends "base.html" %}
 
 {% block title %}用户登录 - HackShop{% endblock %}
 
 {% block head %}
 <style>
-    /* 主内容区域 */
-    .main-content {
-        min-height: calc(100vh - 200px);
-        padding: 3rem 0;
-    }
-
-    /* 认证页面容器 */
-    .auth-container {
-        background: var(--white-color);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--box-shadow-lg);
-        width: 100%;
-        max-width: 450px;
-        overflow: hidden;
-        margin: 0 auto;
-    }
-
-    /* 认证头部 */
-    .auth-header {
-        background: var(--primary-color);
-        color: var(--white-color);
-        padding: var(--spacing-xl);
-        text-align: center;
-    }
-
-    .auth-header h1 {
-        margin: 0;
-        font-size: 1.8rem;
-        font-weight: 600;
-    }
-
-    .auth-header p {
-        margin: var(--spacing-sm) 0 0 0;
-        opacity: 0.9;
-        font-size: 0.9rem;
-    }
-
-    /* 认证内容 */
-    .auth-content {
-        padding: var(--spacing-xl);
-    }
-
-    /* 表单样式 */
-    .form-group {
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .form-label {
-        display: block;
-        margin-bottom: var(--spacing-sm);
-        font-weight: 500;
-        color: var(--dark-color);
-    }
-
-    .form-control {
-        width: 100%;
-        padding: var(--spacing-md);
-        border: 2px solid var(--light-color);
-        border-radius: var(--border-radius-md);
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
-    }
-
-    .form-control.is-invalid {
-        border-color: var(--secondary-color);
-    }
-
-    .invalid-feedback {
-        color: var(--secondary-color);
-        font-size: 0.875rem;
-        margin-top: var(--spacing-xs);
-    }
-
-    /* 按钮样式 */
-    .btn-auth {
-        width: 100%;
-        padding: var(--spacing-md);
-        border: none;
-        border-radius: var(--border-radius-md);
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-bottom: var(--spacing-md);
-    }
-
-    .btn-primary {
-        background: var(--primary-color);
-        color: var(--white-color);
-    }
-
-    .btn-primary:hover {
-        background: #34495e;
-        transform: translateY(-2px);
-        box-shadow: var(--box-shadow-md);
-    }
-
-    /* 分割线 */
     .divider {
         text-align: center;
-        margin: var(--spacing-lg) 0;
+        margin: var(--hs-space-lg) 0;
         position: relative;
     }
-
     .divider::before {
         content: '';
         position: absolute;
@@ -121,54 +21,15 @@
         left: 0;
         right: 0;
         height: 1px;
-        background: var(--light-color);
+        background: var(--hs-border);
     }
-
     .divider span {
-        background: var(--white-color);
-        padding: 0 var(--spacing-md);
-        color: var(--gray-color);
+        background: var(--hs-white);
+        padding: 0 var(--hs-space-md);
+        color: var(--hs-text-secondary);
         font-size: 0.9rem;
         position: relative;
         z-index: 1;
-    }
-
-
-
-    /* 链接样式 */
-    .auth-links {
-        text-align: center;
-        margin-top: var(--spacing-lg);
-    }
-
-    .auth-links a {
-        color: var(--primary-color);
-        text-decoration: none;
-        font-size: 0.9rem;
-        transition: color 0.3s ease;
-    }
-
-    .auth-links a:hover {
-        color: #34495e;
-        text-decoration: underline;
-    }
-
-    /* 提示消息 */
-    .alert {
-        padding: var(--spacing-md);
-        border-radius: var(--border-radius-md);
-        margin-bottom: var(--spacing-lg);
-        border: none;
-    }
-
-    .alert-success {
-        background: rgba(39, 174, 96, 0.1);
-        color: var(--success-color);
-    }
-
-    .alert-danger {
-        background: rgba(231, 76, 60, 0.1);
-        color: var(--secondary-color);
     }
 </style>
 {% endblock %}
